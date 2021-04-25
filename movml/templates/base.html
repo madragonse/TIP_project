@@ -1,0 +1,25 @@
+<!DOCTYOE html>
+<html>
+
+    <head>
+        {% if title %}
+            <title>Móv@Ml - {{ title }}</title>
+        {% else %}
+            <title>Móv@Ml</title>
+        {% endif %}
+    </head>
+
+    <body>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="message">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </body>
+
+</html>

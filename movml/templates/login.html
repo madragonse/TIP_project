@@ -1,5 +1,45 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Login Page</h1>
+    <div class = "content">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <fieldset class="atributes">
+                <legend class="upText">Zarejestruj się</legend>
+                <div class="email_box">
+                    {{ form.email.label(class="atribut_label") }}
+                    {{ form.email(class="atribut_field") }}
+                    {% if form.email.errors %}
+                        {% for error in form.email.errors%}
+                        <div class="atribut_error">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+                    {% endif %}                
+                </div>
+
+                <div class="password_box">
+                    {{ form.password.label(class="atribut_label") }}
+                    {{ form.password(class="atribut_field") }}
+                    {% if form.password.errors %}
+                        {% for error in form.password.errors%}
+                        <div class="atribut_error">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+                    {% endif %}                
+                </div>
+
+
+
+            </fieldset>
+            <div class="button">
+                {{ form.submit(class="button") }}
+            </div>
+            <div class="toLogin_box">
+                <a class="link" href = {{ url_for('register.register') }}>Zarejestruj się jeżeli nie masz konta.</a>
+            </div>
+
+        </form>
+    </div>
 {% endblock content %}

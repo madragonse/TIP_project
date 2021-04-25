@@ -11,6 +11,7 @@ register_bp = Blueprint('register', __name__, template_folder='templates')
 def register():    
     form = RegistrationForm()          
     if form.validate_on_submit():
+        #TODO register to database
         flash("Brawo {}, stworzyłeś konto.".format(form.username.data), 'info')
         return redirect(url_for('home.home'))
     return render_template('register.html', title='Zarejestruj', form = form)

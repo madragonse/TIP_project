@@ -6,11 +6,11 @@
             {{ form.hidden_tag() }}
             <fieldset class="atributes">
                 <legend class="upText">Zarejestruj się</legend>
-                <div class="email_box">
-                    {{ form.email.label(class="atribut_label") }}
-                    {{ form.email(class="atribut_field") }}
-                    {% if form.email.errors %}
-                        {% for error in form.email.errors%}
+                <div class="username_box">
+                    {{ form.username.label(class="atribut_label") }}
+                    {{ form.username(class="atribut_field") }}
+                    {% if form.username.errors %}
+                        {% for error in form.username.errors%}
                         <div class="atribut_error">
                             {{ error }}
                         </div>

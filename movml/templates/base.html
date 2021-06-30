@@ -7,9 +7,12 @@
         {% else %}
             <title>Móv@Ml</title>
         {% endif %}
+
+        <link rel="stylesheet" href="static/base.css">
+        <link rel="stylesheet" href="static/friendsList.css">
     </head>
 
-    <body>
+    <body class="window">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -22,7 +25,13 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        {% block content %}{% endblock content%}
+        <div class="left_list">
+            {% include 'friendsList.html' %}
+        </div>
+        <div class="main_container">
+            {% block content %}{% endblock content%}
+        </div>
+        
     </body>
 
 </html>

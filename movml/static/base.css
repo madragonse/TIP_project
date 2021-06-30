@@ -1,0 +1,24 @@
+.window{
+    display: flex;
+}
+
+.left_list {
+    width: 20%;
+    height: 100%;
+
+    background-color: aqua;
+}
+
+
+.main_container {
+    width: 80%;
+    height: 100%;
+
+    background-color: palevioletred;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

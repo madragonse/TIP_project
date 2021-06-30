@@ -1,0 +1,12 @@
+<div class="friend_list" >
+    {% for friend in friends %}
+        <div class="friend_position">
+            <div class="friend_username center">
+                {{friend.username}}
+            </div>
+            <div class="friend_status center">
+                {{friend.status}}
+            </div>
+        </div>
+    {% endfor %}
+</div>

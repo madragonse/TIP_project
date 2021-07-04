@@ -113,6 +113,15 @@ class TIPDb:
         self.mydb.commit()
         mycursor.close()
 
+    def reinvite_friend(self, user1, user2):
+        mycursor = self.mydb.cursor(buffered=False)
+        sql_update = """UPDATE friends SET state = 'REQ' WHERE (user1 = %s AND user2 = %s OR user1 = %s AND user2 = %s) AND state = 'DEC'"""
+
+        data_update = (user1, user2, user2, user1)
+        mycursor.execute(sql_update, data_update)
+        self.mydb.commit()
+        mycursor.close()
+
     def decline_friend(self, user1, user2):
         mycursor = self.mydb.cursor(buffered=False)
         sql_update = """UPDATE friends SET state = 'DEC' WHERE (user1 = %s AND user2 = %s OR user1 = %s AND user2 = %s) AND state = 'REQ'"""

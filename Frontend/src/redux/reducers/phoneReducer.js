@@ -76,7 +76,7 @@ export default function phoneReducer(state = phoneIntialState, action) {
             session.on('failed', (data) => {
                 stop('ringback');
                 play('rejected');
-                
+
                 console.log(
                     {
                         level: 'error',

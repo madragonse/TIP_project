@@ -238,8 +238,8 @@ def get_friends(user_id, state, page_vars):
         return generate_response(request, {"error": "Database error"}, 503)
 
     max_pages = int(friends_num / friends_per_page)
-    if friends_num!=friends_per_page:
-        max_pages +=1
+    if friends_num != friends_per_page:
+        max_pages += 1
     return generate_response(request, {'maxPages': max_pages, 'friends': json.dumps(data)}, 200)
 
 
@@ -272,16 +272,20 @@ def modify_friendship(action, user_id, friend_name):
 
         are_friends = db.are_friends(user_id, friend_id)
         if len(are_friends) != 0:
-            friend_status=are_friends[0][0]
+            friend_status = are_friends[0][0]
 
         if str(action) == "invite":
             # reinvite if their friendship has been declined
-            if len(are_friends) == 0 or friend_status == "DEC":
+            if len(are_friends) == 0:
                 db.invite_friend(user_id, friend_id)
                 return generate_response(request, {"feedback": "Friend request sent!"}, 200)
 
+            if friend_status == "DEC":
+                db.reinvite_friend(friend_id, user_id)
+                return generate_response(request, {"feedback": "Friend request resent!"}, 200)
+
             # handle already friends
-            if  friend_status== "REQ":
+            if friend_status == "REQ":
                 # true if user was the one to invite
                 user_invited = db.did_user_invite(user_id, friend_id)
 

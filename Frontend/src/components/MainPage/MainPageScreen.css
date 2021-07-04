@@ -9,7 +9,6 @@
 }
 .FriendList {
     grid-area: FriendList;
-    height: 100%;
 }
 .Phone {
     grid-area: Phone;

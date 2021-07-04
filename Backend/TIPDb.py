@@ -34,7 +34,7 @@ class TIPDb:
         mycursor.close()
 
     def add_user(self, username, password, email):
-        mycursor = self.mydb.cursor()
+        mycursor = self.mydb.cursor(buffered=False)
 
         sql_user = ("INSERT INTO user"
                     "(username, password, email, joined) "
@@ -46,7 +46,7 @@ class TIPDb:
         mycursor.close()
 
     def get_user_by_id(self, user_id):
-        mycursor = self.mydb.cursor()
+        mycursor = self.mydb.cursor(buffered=False)
 
         sql_find = ("SELECT * FROM user WHERE user.userID = %s")
 
@@ -57,7 +57,7 @@ class TIPDb:
         return result
 
     def get_user_by_email(self, email):
-        mycursor = self.mydb.cursor()
+        mycursor = self.mydb.cursor(buffered=False)
 
         sql_find = ("SELECT * FROM user WHERE user.email = %s")
 
@@ -68,7 +68,7 @@ class TIPDb:
         return result
 
     def get_user(self, username):
-        mycursor = self.mydb.cursor()
+        mycursor = self.mydb.cursor(buffered=False)
         sql_find = ("SELECT * FROM user WHERE user.username = %s")
 
         data_find = (username,)
@@ -78,12 +78,12 @@ class TIPDb:
         return result
 
     def are_friends(self, user_id, friend_id):
-        mycursor = self.mydb.cursor()
+        mycursor = self.mydb.cursor(buffered=False)
         sql_find = """SELECT state FROM friends WHERE (user1 = %s AND user2 = %s) OR (user1 = %s AND user2 = %s)"""
         print(sql_find)
         data_find = (str(user_id), str(friend_id), str(friend_id), str(user_id))
         mycursor.execute(sql_find, data_find)
-        result = mycursor.fetchone()
+        result = mycursor.fetchall()
         mycursor.close()
         return result
 
@@ -91,7 +91,7 @@ class TIPDb:
     # returns true if inviter was the one that invited the invitee
     # false if other way around
     def did_user_invite(self, inviter, invitee):
-        mycursor = self.mydb.cursor()
+        mycursor = self.mydb.cursor(buffered=False)
         sql_find = ("""SELECT state FROM friends
                               WHERE (user1 = %s AND user2 = %s)
                               """)
@@ -103,7 +103,7 @@ class TIPDb:
         return result is not None
 
     def accept_friend(self, inviter, invitee):
-        mycursor = self.mydb.cursor()
+        mycursor = self.mydb.cursor(buffered=False)
         sql_update = """UPDATE friends SET state = 'ACT' WHERE (user1 = %s AND user2 = %s) AND state = 'REQ'"""
 
         data_update = (inviter, invitee)
@@ -112,14 +112,8 @@ class TIPDb:
         mycursor.close()
 
     def decline_friend(self, user1, user2):
-        mycursor = self.mydb.cursor()
-        sql_update = ("""UPDATE friends 
-                          SET state = 'DEC'
-                          WHERE 
-                          ((user1 = %s AND user2 = %s)
-                          OR (user2 = %s AND user1 = %s))
-                          AND state = 'REQ'
-                          """)
+        mycursor = self.mydb.cursor(buffered=False)
+        sql_update = """UPDATE friends SET state = 'DEC' WHERE (user1 = %s AND user2 = %s OR user1 = %s AND user2 = %s) AND state = 'REQ'"""
 
         data_update = (user1, user2, user2, user1)
         mycursor.execute(sql_update, data_update)
@@ -127,7 +121,7 @@ class TIPDb:
         mycursor.close()
 
     def invite_friend(self, inviter_id, invetee_id):
-        mycursor = self.mydb.cursor()
+        mycursor = self.mydb.cursor(buffered=False)
         sql_find = ("""INSERT INTO friends 
                        (user1,user2,state)
                         VALUES(%s,%s,'REQ')""")
@@ -138,7 +132,7 @@ class TIPDb:
         mycursor.close()
 
     def remove_friends(self, user1, user2):
-        mycursor = self.mydb.cursor()
+        mycursor = self.mydb.cursor(buffered=False)
         sql_find = ("""DELETE FROM Friends 
                        WHERE (user1 = %s AND user2 = %s)
                        OR (user1 = %s AND user2 = %s) """)
@@ -148,10 +142,38 @@ class TIPDb:
         self.mydb.commit()
         mycursor.close()
 
-    def get_friends(self, user_id, state, start, end):
-        mycursor = self.mydb.cursor()
+    def count_friends(self, user_id, state):
+        mycursor = self.mydb.cursor(buffered=False)
+
+        # sent requests
+        if state == "SREQ":
+            sql_find = ("""SELECT COUNT(t.friendId) FROM (SELECT friendId,user2 as user,state FROM Friends WHERE user1 = %s AND state = 'REQ') t""")
+            data_find = (user_id,)
 
         # received requests
+        elif state == "RREQ":
+            sql_find = ("""SELECT COUNT(t.friendId) FROM (SELECT friendId,user1 as user,state FROM Friends WHERE user2 = %s AND state = 'REQ') t""")
+            data_find = (user_id, )
+        # all other (currently active/declined)
+        else:
+            sql_find = ("""SELECT COUNT(friendId) FROM (
+                                   (SELECT friendId,user2 as user,state FROM Friends as f1
+                                   WHERE user1 = %s AND state = %s)
+                                   UNION
+                                   (SELECT friendId,user1 as user,state FROM Friends as f2
+                                   WHERE user2 = %s AND state = %s)) b
+                                   """)
+            data_find = (user_id, state, user_id, state)
+
+        mycursor.execute(sql_find, data_find)
+        result = mycursor.fetchall()
+        mycursor.close()
+        return result[0][0]
+
+    def get_friends(self, user_id, state, start, end):
+        mycursor = self.mydb.cursor(buffered=False)
+
+        # sent requests
         if state == "SREQ":
             sql_find = ("""SELECT username,state FROM (
                            SELECT friendId,user2 as user,state FROM Friends as f1
@@ -160,7 +182,7 @@ class TIPDb:
                            ORDER BY b.friendId
                            LIMIT %s,%s""")
             data_find = (user_id, start, end)
-        # sent requests
+        # received requests
         elif state == "RREQ":
             sql_find = ("""SELECT username,state FROM (
                                      SELECT friendId,user1 as user,state FROM Friends as f1

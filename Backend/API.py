@@ -1,4 +1,5 @@
 import json
+import math
 
 from flask import Flask, request, jsonify, make_response
 import TIPDb
@@ -8,10 +9,10 @@ from flask_cors import CORS
 from ServerState import *
 
 local_port = '3000'
-sip_server_port='5001'
+sip_server_port = '5001'
 domain = 'localhost:' + local_port
 orgin_prefix = "http://"
-allowed_domains = [domain, '127.0.0.1', '127.0.0.1:' + local_port, 'localhost','127.0.0.1:'+sip_server_port]
+allowed_domains = [domain, '127.0.0.1', '127.0.0.1:' + local_port, 'localhost', '127.0.0.1:' + sip_server_port]
 # add http:// before each allowed domain to get orgin
 allowed_origins = [orgin_prefix + dom for dom in allowed_domains]
 debug_mode = True
@@ -128,9 +129,9 @@ def check_auth():
     # check for needed values
     if ('sessionToken' not in cookie_dict) or ('id' not in cookie_dict):
         return generate_response(request, {"error": "Missing session token cookie."}, 401)
-
-    result = authorize_user(cookie_dict['id'], cookie_dict['sessionToken'])
-    return make_response({"result": str(result)}, 200)
+    user_id = cookie_dict['id']
+    result = authorize_user(user_id, cookie_dict['sessionToken'])
+    return make_response({"result": str(result), 'user_id': user_id}, 200)
 
 
 @app.route('/user/logout', methods=['GET', 'OPTIONS'])
@@ -223,6 +224,7 @@ def get_friends(user_id, state, page_vars):
         start = page * friends_per_page
         end = page * friends_per_page + friends_per_page
         friends = db.get_friends(user_id, state, start, end)
+        friends_num = db.count_friends(user_id, state)
 
         data = []
         for friend in friends:
@@ -235,7 +237,10 @@ def get_friends(user_id, state, page_vars):
         if debug_mode: ("DB ERROR" + str(ex))
         return generate_response(request, {"error": "Database error"}, 503)
 
-    return generate_response(request, json.dumps(data), 200)
+    max_pages = int(friends_num / friends_per_page)
+    if friends_num!=friends_per_page:
+        max_pages +=1
+    return generate_response(request, {'maxPages': max_pages, 'friends': json.dumps(data)}, 200)
 
 
 @app.route('/friend/<action>/<user_id>/<friend_name>', methods=['POST', 'OPTIONS'])
@@ -291,13 +296,14 @@ def modify_friendship(action, user_id, friend_name):
             if are_friends is None:
                 return generate_response(request, {"error": "You two are not friends!"}, 503)
 
-            if are_friends[0] == "REQ":
+            # true if user was the one to invite
+            user_invited = db.did_user_invite(user_id, friend_id)
+            if are_friends[0] == "REQ" and not user_invited:
                 db.decline_friend(user_id, friend_id)
                 return generate_response(request, {"feedback": "Friendship declined!"}, 200)
 
-            if are_friends[0] == "ACT" or are_friends[0] == "DEC":
-                db.remove_friends(user_id, friend_id)
-                return generate_response(request, {"feedback": "Friend removed successfully!"}, 200)
+            db.remove_friends(user_id, friend_id)
+            return generate_response(request, {"feedback": "Friend removed successfully!"}, 200)
 
     except Exception as ex:
         if debug_mode: ("DB ERROR" + str(ex))

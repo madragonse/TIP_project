@@ -14,6 +14,9 @@ API_PORT = '5000'
 API_URL = API_PREFIX + API_IP + ':' + API_PORT
 
 debugMode = True
+# holds all currently authorized sockets
+# key is user_id value dict with sip_username,call_id
+sip_users = {}
 
 
 class SIPProtocol(WebSocketServerProtocol):
@@ -33,6 +36,7 @@ class SIPProtocol(WebSocketServerProtocol):
             return
 
         # authorize user
+        if debugMode: print("Autorizing user!")
         if 'cookie' not in request.headers:
             if debugMode: print("Missing cookie!")
             self.sendHttpErrorResponse(401, "Unauthorized")
@@ -46,8 +50,12 @@ class SIPProtocol(WebSocketServerProtocol):
         response = r.json()
 
         if response['result'] != 'True':
+            if debugMode: print("Authorization failed!")
             self.sendHttpErrorResponse(401, "Unauthorized")
             return
+
+        if debugMode: print("Authorization succesfull!")
+
 
     def onOpen(self):
         if debugMode: print("Connection Opened!")

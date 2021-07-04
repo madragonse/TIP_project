@@ -11,7 +11,7 @@ export const phoneIntialState = {
     incomingCall: false,
     mounted: false,
     status: PHONE_STATUS.DISCONNECTED,
-    session: undefined,
+    session: null,
     incomingSession: null
 };
 

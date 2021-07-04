@@ -90,9 +90,9 @@ class SIPProtocol(WebSocketServerProtocol):
             return
 
         if sip_msg.method == "REGISTER":
-            self.on_register(msg)
+            self.on_register(sip_msg)
         elif sip_msg.method == "INVITE":
-            self.on_invite(msg)
+            self.on_invite(sip_msg)
 
 
 if __name__ == '__main__':

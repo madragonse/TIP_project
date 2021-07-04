@@ -58,7 +58,9 @@ function SessionInfo({session,incomingSession,dispatch}){
             >
 
                 <div className="currentSessionInfo">
-                    <h2>calling {callingName}</h2>
+                    <h2>calling&nbsp;
+                       {session ? session.remote_identity.uri.user:""}
+                    </h2>
 
                     <div className="timer">
 

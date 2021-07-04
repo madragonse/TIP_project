@@ -2,7 +2,7 @@ import CallWidget from "./CallWidget";
 import {useEffect, useState} from "react";
 import {connect} from "react-redux";
 import {
-    call,
+    call, hangUpPhone,
     setPhoneIncomingSession,
     setPhoneMounted, setPhoneSession,
     setPhoneState,
@@ -16,12 +16,13 @@ import "./Phone.css"
 import SessionInfo from "./SessionInfo";
 
 
-function Phone({dispatch,userId,ua,mounted,session,incomingSession,status}){
+function Phone({dispatch,userId,ua,session,incomingSession,status}){
     const [listenersOn,setListenersOn]=useState(false);
+    const [mounted,setMounted]=useState(true)
 
     useEffect(()=>{
         setListenersOn(false);
-        dispatch(setPhoneMounted(true));
+        setMounted(true);
         dispatch(setUpPhone(userId))
     },[])
 
@@ -132,9 +133,9 @@ function Phone({dispatch,userId,ua,mounted,session,incomingSession,status}){
                   <SessionInfo/>
               </PhoneStatus>
               <div>
-                  <button onClick={()=>dispatch(call("test123"))}>simumalte call</button>
-                  <button onClick={()=>dispatch(setPhoneIncomingSession())}>simumalte incoming call</button>
-                  <button onClick={()=>dispatch(setPhoneSession(null))}>end call</button>
+                  <button onClick={()=>dispatch(call("test123"))}>simulate call</button>
+                  <button onClick={()=>dispatch(setPhoneIncomingSession())}>simulate incoming call</button>
+                  <button onClick={()=>dispatch(hangUpPhone())}>end call</button>
               </div>
 
           </div>

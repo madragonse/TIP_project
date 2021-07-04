@@ -3,9 +3,10 @@ import {CSSTransition} from "react-transition-group";
 import "./SessionInfo.css"
 import useTimer from "../../Common/Timer";
 import Reel from "react-reel";
-import {formatTime, formatTimeMinutes} from "../../../Utils";
+import {formatTimeMinutes} from "../../../Utils";
 import {useEffect} from "react";
 import {SIP_MAX_INVITE_WAIT_TIME} from "../../../serverCommunication/SIPServerUtils";
+import {hangUpPhone} from "../../../redux/actions/phoneActions";
 
 //used for timer
 const theme = {
@@ -30,7 +31,7 @@ const theme = {
 
 
 
-function SessionInfo({session,incomingSession}){
+function SessionInfo({session,incomingSession,dispatch}){
     //timer if in call
     //incoming call from whom
     let callingName="someone";
@@ -40,6 +41,12 @@ function SessionInfo({session,incomingSession}){
         timerRestart();
     },[session])
 
+    //if calling timer has run out on client side, abort call
+    useEffect(()=>{
+        if (timer===0){
+            dispatch(hangUpPhone())
+        }
+    },[timer])
 
     return (
         <div className="SessionInfo">

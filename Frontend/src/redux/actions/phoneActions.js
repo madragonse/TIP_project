@@ -20,11 +20,6 @@ export const startPhone = (ua) => ({
     payload:ua
 })
 
-export const setPhoneMounted = (mounted) => ({
-    type: SET_MOUNTED,
-    payload:mounted
-})
-
 export const setPhoneState = (state) => ({
     type: SET_STATE,
     payload: state
@@ -43,10 +38,10 @@ export const call = (user) => ({
     payload:user
 })
 
-export const hangUp = () => ({
+export const hangUpPhone = () => ({
     type: HANGUP,
 })
 
-export const pickUp = () => ({
+export const pickUpPhone = () => ({
     type: PICKUP,
 })

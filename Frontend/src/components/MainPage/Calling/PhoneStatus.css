@@ -32,11 +32,15 @@
 
 .PhoneStatus h1{
     all:unset;
+    display: block;
+    text-align: center;
     color: var(--text-color);
     font-size: 2rem;
 }
 .PhoneStatus h2{
     all:unset;
+    display: block;
+    text-align: center;
     color: var(--text-color);
     font-size: 1.2rem;
 }

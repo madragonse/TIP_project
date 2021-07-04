@@ -66,7 +66,8 @@ export default function phoneReducer(state = phoneIntialState, action) {
                 });
 
             session.on('connecting', () => {
-                return {...state, session: session}
+                play('ringback');
+                return {...state, session: session,status: PHONE_STATUS.CALLING}
             });
 
             session.on('progress', () => {
@@ -83,12 +84,12 @@ export default function phoneReducer(state = phoneIntialState, action) {
                         title: 'Call failed',
                         message: data.cause
                     });
-                return {...state, session: null}
+                return {...state, session: null,status: PHONE_STATUS.REGISTERED}
             });
 
             session.on('ended', () => {
                 stop('ringback');
-                return {...state,session:session}
+                return {...state,session:session,status: PHONE_STATUS.REGISTERED}
             });
 
             session.on('accepted', () => {
@@ -98,11 +99,11 @@ export default function phoneReducer(state = phoneIntialState, action) {
 
             return {...state,session: session,status: PHONE_STATUS.CALLING};
         case actions.PICKUP:
-            localStorage.setItem('isInCall', action.payload);
-            return {...state, isInCall: action.payload};
+            if (state.incomingSession!==null){ state.session=state.incomingSession}
+            return {...state, session: state.session,status: PHONE_STATUS.IN_CALL};
         case actions.HANGUP:
-            localStorage.setItem('isInCall', action.payload);
-            return {...state, isInCall: action.payload};
+            if (state.session!==null){ state.session.terminate();}
+            return {...state, session: null,status: PHONE_STATUS.REGISTERED};
         default:
             return state
     }

@@ -13,7 +13,7 @@ import {call, setPhoneIncomingSession} from "../../../redux/actions/phoneActions
 function CallWidget({status,dispatch}){
     const [uri,setUri]=useState("")
     const [feedbackMessage,setFeedbackMsg]=useState("")
-    const callIcon = <FontAwesomeIcon icon={faPhone}/>;
+
 
     function HandleSubmit(e){
         e.preventDefault();
@@ -41,7 +41,7 @@ function CallWidget({status,dispatch}){
                         value={uri}
                         onChange={(e) => handleInput(e.target.value)}
                     />
-                    <Button type="submit"> {callIcon}</Button>
+                    <Button type="submit"> Call</Button>
                 </Form>
                 {feedbackMessage !== "" &&
                 <span className="feedback">{feedbackMessage}</span>

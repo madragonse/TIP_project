@@ -4,9 +4,9 @@ import Dots from "../../Common/Dots";
 import {Tooltip} from "react-bootstrap";
 
 export class PHONE_STATUS {
-    static DISCONNECTED = new PHONE_STATUS("disconnected", <Dots><h2>Phone disconnected, attempting reconnect</h2></Dots>,"var(--fail-color)")
-    static CONNECTED = new PHONE_STATUS("connected", <Dots><h2>Phone connected, awaiting registration</h2></Dots>,"var(--primary-color)")
-    static REGISTERED= new PHONE_STATUS("registered",<h2>Phone connected and ready for calls</h2>,"var(--success-color)")
+    static DISCONNECTED = new PHONE_STATUS("disconnected", <h2>Disconnected, attempting to reconnect<Dots/></h2>,"var(--fail-color)")
+    static CONNECTED = new PHONE_STATUS("connected", <h2>Connected, awaiting registration<Dots/></h2>,"var(--primary-color)")
+    static REGISTERED= new PHONE_STATUS("registered",<div><h1>ONLINE</h1><h2>Phone connected and ready for calls</h2></div>,"var(--success-color)")
     static CALLING= new PHONE_STATUS("calling",<h1>PLEASE HOLD</h1>,"var(--sec-color)")
     static INCOMING_CALL= new PHONE_STATUS("calling",<h1>INCOMING CALL</h1>,"var(--sec-color)")
     static IN_CALL= new PHONE_STATUS("inCall",<h1>IN CALL</h1>,"var(--success-color)")

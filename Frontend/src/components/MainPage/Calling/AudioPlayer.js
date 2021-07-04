@@ -17,7 +17,6 @@ export function initialize() {
 
         for (const sound of SOUNDS.values()) {
             sound.audio.volume = 0;
-
             try {
                 sound.audio.play();
             } catch (error) {
@@ -54,4 +53,4 @@ export function stop(name) {
 
         sound.audio.pause();
         sound.audio.currentTime = 0.0;
-    }
+}

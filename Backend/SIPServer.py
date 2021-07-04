@@ -74,7 +74,7 @@ class SIPProtocol(WebSocketServerProtocol):
         msg.__dict__["uri"] = ""
         msg.__dict__["headers"]["max-forwards"] =  str(int(msg.__dict__["headers"]["max-forwards"])-1)
         msg.__dict__["headers"]["to"]["params"]["tag"] = "testtagtag"
-        msg.__dict__["headers"]["supported"] = "path,gruu,outbound\r\n"
+        msg.__dict__["headers"]["supported"] = "gruu,outbound\r\n"
         msg.__dict__["headers"].pop('user-agent', None)
 
         #pprint.pprint(msg.__dict__)

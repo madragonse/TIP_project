@@ -63,7 +63,7 @@ class SIPProtocol(WebSocketServerProtocol):
         if debugMode: print("Connection Opened!")
 
     # TODO
-    def on_register(self, msg:sip_parser.sip_message.SipMessage):
+    def on_register(self, msg):
         print("In request:")
         # print(msg.stringify())
         # msg.add_header_from_str("ht", "hv")

@@ -2,6 +2,7 @@ import CallWidget from "./CallWidget";
 import {useEffect, useState} from "react";
 import {connect} from "react-redux";
 import {
+    call,
     setPhoneIncomingSession,
     setPhoneMounted, setPhoneSession,
     setPhoneState,
@@ -131,7 +132,7 @@ function Phone({dispatch,userId,ua,mounted,session,incomingSession,status}){
                   <SessionInfo/>
               </PhoneStatus>
               <div>
-                  <button onClick={()=>dispatch(setPhoneSession())}>simumalte call</button>
+                  <button onClick={()=>dispatch(call("test123"))}>simumalte call</button>
                   <button onClick={()=>dispatch(setPhoneIncomingSession())}>simumalte incoming call</button>
                   <button onClick={()=>dispatch(setPhoneSession(null))}>end call</button>
               </div>

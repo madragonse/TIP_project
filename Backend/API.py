@@ -8,9 +8,10 @@ from flask_cors import CORS
 from ServerState import *
 
 local_port = '3000'
+sip_server_port='5001'
 domain = 'localhost:' + local_port
 orgin_prefix = "http://"
-allowed_domains = [domain, '127.0.0.1', '127.0.0.1:' + local_port, 'localhost']
+allowed_domains = [domain, '127.0.0.1', '127.0.0.1:' + local_port, 'localhost','127.0.0.1:'+sip_server_port]
 # add http:// before each allowed domain to get orgin
 allowed_origins = [orgin_prefix + dom for dom in allowed_domains]
 debug_mode = True
@@ -98,7 +99,38 @@ def login():
     resp = generate_response(request, {"userId": user_id}, 200)
     resp.set_cookie('sessionToken', session_token,
                     secure=False)  # path="user/refresh_session"
+    resp.set_cookie('id', user_id,
+                    secure='false')  # path="/refresh_session"
     return resp
+
+
+@app.route('/user/check_auth', methods=['GET', 'OPTIONS'])
+def check_auth():
+    if request.method == "OPTIONS":
+        return generate_response(request, {}, 200)
+
+    # authorize user
+    if 'cookie' not in request.headers:
+        return generate_response(request, {"error": "Missing session token cookie."}, 401)
+
+    # gets cookie in format key=value; key=value...
+    cookies = request.headers['cookie']
+    # splits into array of seperate key=value cookies
+    cookies_arr = cookies.split('; ')
+    # transform into dict of key:value
+    cookie_dict = {}
+    for cookie in cookies_arr:
+        split_cookie = cookie.split('=')
+        cookie_key = split_cookie[0]
+        cookie_val = split_cookie[1]
+        cookie_dict[cookie_key] = cookie_val
+
+    # check for needed values
+    if ('sessionToken' not in cookie_dict) or ('id' not in cookie_dict):
+        return generate_response(request, {"error": "Missing session token cookie."}, 401)
+
+    result = authorize_user(cookie_dict['id'], cookie_dict['sessionToken'])
+    return make_response({"result": str(result)}, 200)
 
 
 @app.route('/user/logout', methods=['GET', 'OPTIONS'])
@@ -128,6 +160,8 @@ def logout():
     # set cookie to a dummy one
     resp = generate_response(request, {"logout": 'succesfull'}, 200)
     resp.set_cookie('sessionToken', 'none',
+                    secure='false')  # path="/refresh_session"
+    resp.set_cookie('id', 'none',
                     secure='false')  # path="/refresh_session"
     return resp
 
@@ -247,7 +281,7 @@ def modify_friendship(action, user_id, friend_name):
                 if user_invited:
                     return generate_response(request, {"error": "Invitation already sent!"}, 400)
 
-                db.accept_friend(friend_id,user_id)
+                db.accept_friend(friend_id, user_id)
                 return generate_response(request, {"feedback": "Friend request accepted!"}, 200)
 
             if are_friends[0] == "ACT":
@@ -270,6 +304,7 @@ def modify_friendship(action, user_id, friend_name):
         return generate_response(request, {"error": "Database error"}, 503)
 
     return generate_response(request, {"error": "Unknown error"}, 503)
+
 
 # run flask app
 app.run("127.0.0.1", 5000, debug=True)

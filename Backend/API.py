@@ -274,7 +274,7 @@ def modify_friendship(action, user_id, friend_name):
 
         if str(action) == "invite":
             # reinvite if their friendship has been declined
-            if are_friends is None or are_friends[0] == "DEC":
+            if len(are_friends) == 0 or are_friends[0] == "DEC":
                 db.invite_friend(user_id, friend_id)
                 return generate_response(request, {"feedback": "Friend request sent!"}, 200)
 
@@ -293,7 +293,7 @@ def modify_friendship(action, user_id, friend_name):
                 return generate_response(request, {"Error": "You are already friends"}, 400)
 
         if str(action) == "remove":
-            if are_friends is None:
+            if len(are_friends) == 0:
                 return generate_response(request, {"error": "You two are not friends!"}, 503)
 
             # true if user was the one to invite

@@ -20,6 +20,13 @@ const useTimer = (initialState = 0,countDirection=1) => {
         setTimer(time);
     }
 
+    const updateTimer = () =>{
+        setTimer((timer) =>{
+            let  temp=timer + countDirection;
+            return temp<0? 0:temp;
+        })
+    }
+
     const handleStart = () => {
         setIsActive(true)
         setIsPaused(true)
@@ -30,11 +37,11 @@ const useTimer = (initialState = 0,countDirection=1) => {
 
     const timerRestart = () => {
         clearInterval(countRef.current)
-        setTimer(0)
+        setTimer(initialState)
         setIsActive(true)
         setIsPaused(true)
         countRef.current = setInterval(() => {
-            setTimer((timer) => timer + countDirection)
+            updateTimer();
         }, 1000)
     }
 
@@ -46,7 +53,9 @@ const useTimer = (initialState = 0,countDirection=1) => {
     const handleResume = () => {
         setIsPaused(true)
         countRef.current = setInterval(() => {
-            setTimer((timer) => timer + countDirection)
+            setTimer((timer) => {
+                updateTimer();
+            })
         }, 1000)
     }
 

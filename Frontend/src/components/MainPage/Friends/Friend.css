@@ -1,0 +1,29 @@
+.Friend{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0.5rem;
+    width: 70%;
+    color: var(--primary-color-dark);
+    padding: 1rem 2rem;
+    background-color: #dbdbdb;
+    text-align: center;
+}
+.Friend .userInfo{
+    font-size: 1.3rem;
+    font-weight: 400;
+}
+
+.Friend .options{
+    flex-basis: 20%;
+}
+.Friend .options span{
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    margin-left: 0.5rem;
+}
+.Friend .options span:hover{
+    cursor:pointer;
+    color: var(--sec-color);
+}
+

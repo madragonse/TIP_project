@@ -1,0 +1,32 @@
+.FriendList{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.FriendList .StatusChoice{
+    padding: 1rem 1rem;
+    background-color: var(--primary-color-dark);
+}
+
+.FriendList .friendsContainer{
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0rem;
+    min-height: 50vh;
+    background-color: var(--section-bg-color);
+
+}
+
+.FriendList button{
+    all: unset;
+    color: var(--text-color);
+    padding: 0.2rem;
+}
+
+.FriendList button:hover{
+    cursor: pointer;
+}
+

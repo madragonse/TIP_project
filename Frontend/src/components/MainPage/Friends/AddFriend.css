@@ -1,0 +1,54 @@
+.AddFriend{
+    background-color: var(--section-bg-color);
+    padding: 1.5rem 2rem;
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.AddFriend h2{
+    margin-top: 0.5rem;
+    font-size: 1.5rem;
+    color: rgba(250, 251, 250, 0.85);
+}
+.AddFriend .form-control{
+    all:unset;
+    display: inline-block;
+    padding: 0.7rem 5%;
+    width: 60%;
+    margin-top: 0.5rem;
+    color: var(--text-color);
+    background-color: var(--body-color);
+    text-align: left;
+}
+
+.AddFriend button{
+    all:unset;
+    display: inline-block;
+    padding: 0.7rem 5%;
+
+    margin-top: 0.3rem;
+    color: var(--text-color);
+    background-color: var(--body-color);
+    text-align: left;
+}
+
+.AddFriend button:hover{
+   color:var(--sec-color);
+    cursor: pointer;
+}
+
+.AddFriend .feedback{
+    margin-top: 0.5rem;
+    margin-left: 0.5rem;
+    color: var(--text-color);
+    text-align: left;
+}
+.AddFriend .error span{
+    color: var(--fail-color);
+}
+.AddFriend .error span{
+    color: var(--fail-color);
+}
+.AddFriend .success span{
+    color: var(--success-color);
+}

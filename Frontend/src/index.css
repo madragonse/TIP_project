@@ -1,0 +1,41 @@
+/*---------------------
+[Colors]
+Color definitions, to be used with by var reference
+ex. "color: var (--some-color);"
+---------------------*/
+:root{
+  --body-color:#282828;
+
+  --primary-color: #69aca2;
+  --primary-color-dark:#468f84;
+  --sec-color:#da8b43;
+  --sec-color-dark:#bf6616;
+  --text-color:#fafbfa;
+  --success-color:#369257;
+  --fail-color :#bf3d3b;
+
+  --navbar-text:#dee3e6;
+}
+
+/*--[Fonts]--*/
+@font-face {
+  font-family: 'CameronSans';
+  src: local('CameronSans'), url(./assets/fonts/CameronSans/CameronSans.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Montserrat-Light';
+  src: local('Montserrat-Light'), url(./assets/fonts/Montserrat/Montserrat-Light.ttf) format('truetype');
+}
+
+
+body {
+  margin: 0 0;
+  width: 100vw;
+  overflow-x:hidden ;
+  font-family: 'Montserrat', serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--body-color);
+}
+
+

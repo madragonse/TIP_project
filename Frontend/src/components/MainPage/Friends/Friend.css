@@ -4,19 +4,13 @@
     justify-content: space-between;
     margin: 0.5rem;
     width: 70%;
-    color: var(--primary-color-dark);
+
     padding: 1rem 2rem;
-    background-color: #dbdbdb;
+    /* background-color: #dbdbdb;*/
+   background-color: var(--body-color);
     text-align: center;
 }
 
-.Friend-enter {
-    opacity: 0;
-}
-.Friend-enter-active {
-    opacity: 1;
-    transition: opacity 500ms, scale 200ms;
-}
 
 .Friend-exit {
     opacity: 1;
@@ -29,6 +23,7 @@
 
 .Friend .userInfo{
     font-size: 1.3rem;
+    color: var(--text-color);
     font-weight: 400;
 }
 

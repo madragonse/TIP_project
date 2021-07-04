@@ -18,11 +18,7 @@ class NavBar extends Component {
         this.currentItems = landingPageItems;
         this.logoVisible=true;
         this.playerWidgetVisible=false;
-        this.logoutIcon=<FontAwesomeIcon
-            className="NavBar-signout"
-            icon={faSignOutAlt}
-            onClick={logout}
-        />;
+
     }
 
     scrollToSection(sectionID) {

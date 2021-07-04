@@ -95,18 +95,13 @@ Buttons that route between different secitons of the mainpage on desktop
 }
 
 .NavBar .NavBar-signout{
-    color:var(--text-color);
-    grid-area: NavMenu;
-    font-size: 2rem;
-    padding: 1rem 3rem 1rem 1rem;
-    margin-left: auto;
     transition: 200ms;
 }
 
 .NavBar .NavBar-signout:hover{
     color:var(--sec-color);
     cursor: pointer;
-    font-size: 2rem;
+    transform: scale(1.1);
 }
 
 

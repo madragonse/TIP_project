@@ -102,8 +102,17 @@ export default function phoneReducer(state = phoneIntialState, action) {
             if (state.incomingSession!==null){ state.session=state.incomingSession}
             return {...state, session: state.session,status: PHONE_STATUS.IN_CALL};
         case actions.HANGUP:
-            if (state.session!==null){ state.session.terminate();}
-            return {...state, session: null,status: PHONE_STATUS.REGISTERED};
+            let curSes=state.session;
+            let incSes=state.incomingSession;
+            if (curSes){
+                curSes.terminate();
+                curSes=null;
+            }
+            if (incSes){
+                incSes.terminate();
+                incSes=null;
+            }
+            return {...state, session: curSes,incomingSession:incSes, status: PHONE_STATUS.REGISTERED};
         default:
             return state
     }

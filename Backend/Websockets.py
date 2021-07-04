@@ -37,24 +37,25 @@ class SIPProtocol(WebSocketServerProtocol):
         # self.sendData(resp)
 
     # TODO
-    def on_invite(self,msg):
+    def on_invite(self, msg):
         print(msg)
-        #send invite to invited person
-        #handle person not connected
-        
-
+        # send invite to invited person
+        # handle person not connected
 
     def onMessage(self, payload, isBinary):
         msg = payload.decode('utf8')
         if debugMode: print("New message")
         if debugMode: print(msg)
 
-        if len(msg) == 0 or '\n' not in msg:
+        if len(msg) == 0:
             return
+
+        #parse msg into managable format
         try:
             sip_msg = SipMessage.from_string(msg)
         except SipParseError as ex:
             print(f"Failed to parse message: {ex}")
+            return
 
         if sip_msg.method == "REGISTER":
             self.on_register(msg)
@@ -80,48 +81,3 @@ if __name__ == '__main__':
     finally:
         server.close()
         loop.close()
-
-# overloading function fired after check
-#
-# if debugMode: print("Upgrading protocol")
-# headers = {
-#     'Upgrade': 'websocket',
-#     'Connection': 'Upgrade',
-#     'Sec-WebSocket-Accept': generate_key(),
-#     'Sec-WebSocket-Protocol': 'sip'
-# }
-#
-# resp = generateHttpResponse(101, "Switching Protocols", headers)
-# self.sendData(resp)
-# async def process_request(self, path):
-#
-#     if debugMode: print("HANDSHAKE INITIATED")
-#     # returns key that must be passed to build response
-#     try:
-#         handshake_key = handshake.check_request()
-#     except Exception as ex:
-#         print()
-#         return "BAD REQUEST"
-#     if debugMode: print("Handshake_key " + handshake_key)
-#
-#     # generate response with appropriate headers to establish connection
-#     headers = handshake.Headers({'test': 'test123'})
-#     handshake.build_response(headers, handshake_key)
-#     if debugMode: print("Built response ")
-#     # await websocket.send(resp)
-#     if debugMode: print("Sent response ")
-#
-#
-# async def communicate(websocket, path):
-#     name = await websocket.recv()
-#     # print(f"< {name}")
-#
-#     # greeting = f"Hello {name}!"
-#
-#     #
-#     # print(f"> {greeting}")
-#
-#
-# start_server = websockets.serve(process_request, "127.0.0.1", 5001)
-# asyncio.get_event_loop().run_until_complete(start_server)
-# asyncio.get_event_loop().run_forever()

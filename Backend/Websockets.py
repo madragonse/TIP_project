@@ -3,10 +3,12 @@ from autobahn.asyncio.websocket import WebSocketServerFactory
 from autobahn.asyncio.websocket import WebSocketServerProtocol
 from sip_parser.exceptions import SipParseError
 from sip_parser.sip_message import SipMessage
+import sip_parser
 from ServerState import *
 
 debugMode = True
 
+registered_users = {}
 
 class SIPProtocol(WebSocketServerProtocol):
 
@@ -23,24 +25,60 @@ class SIPProtocol(WebSocketServerProtocol):
         if 'sip' not in request.protocols:
             if debugMode: print("Not a SIP socket, abandoning connection!")
             return
+        
 
     def onOpen(self):
         if debugMode: print("Connection Opened!")
 
     # TODO
-    def on_register(self, msg):
-        print(msg)
-        # check if is a valid username and session token
+    def on_register(self, msg:sip_parser.sip_message.SipMessage):
+        print("In request:")
+        # print(msg.stringify())
+        # msg.add_header_from_str("ht", "hv")
+        import pprint
+        #pprint.pprint(msg.__dict__)
+        pprint.pprint(msg.__dict__)
+        msg.__dict__["method"] = "OK"
+        msg.__dict__["type"] = "200"
+        msg.__dict__["uri"] = ""
+        msg.__dict__["headers"]["to"]["params"]["tag"] = "testtagtag"
+        msg.__dict__["headers"]["supported"] = "gruu,outbound"
+        print(msg.stringify())#dev
 
-        # send back succesfull register message
-        # resp.method = 'REGISTER'
-        # self.sendData(resp)
+        # TODO
+        # map registered address
+        address = msg.__dict__["headers"]["from"]["uri"]
+        sdd_pair = address.split("@")
 
-    # TODO
+        
+        registered_users[sdd_pair[0]] = sdd_pair[1]
+        print(registered_users) #dev
+        print("--------------------------------") #dev
+
+        #on success 
+        #self.sendData((msg.stringify()).encode('utf-8'))
+
+    
     def on_invite(self, msg):
-        print(msg)
-        # send invite to invited person
+        pass
+        # print(msg)
         # handle person not connected
+        
+        # response with trying
+
+        # send invite to invited person
+        
+        # get OK
+
+        # send OK
+
+        # get ACK
+
+        # send ACK
+
+        # start direct call
+
+
 
     def onMessage(self, payload, isBinary):
         msg = payload.decode('utf8')
@@ -58,9 +96,9 @@ class SIPProtocol(WebSocketServerProtocol):
             return
 
         if sip_msg.method == "REGISTER":
-            self.on_register(msg)
+            self.on_register(sip_msg)
         elif sip_msg.method == "INVITE":
-            self.on_invite(msg)
+            self.on_invite(sip_msg)
 
 
 if __name__ == '__main__':

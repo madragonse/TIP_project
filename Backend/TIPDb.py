@@ -1,13 +1,13 @@
 from datetime import date
 import mysql.connector
 
-db_IP = "192.168.1.56"
+db_IP = "127.0.0.1"
 
 
 class TIPDb:
 
     def __init__(self):
-        self.mydb = mysql.connector.connect(host=db_IP, user="home", password="Pudzian123", database="tipdb")
+        self.mydb = mysql.connector.connect(host=db_IP, user="root", password="", database="movme")
 
     def __del__(self):
         self.mydb.close()

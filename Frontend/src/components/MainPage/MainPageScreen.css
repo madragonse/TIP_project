@@ -11,11 +11,8 @@
     grid-area: FriendList;
 }
 .Phone {
-    grid-area: Phone;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     height: 100%;
+    grid-area: Phone;
 }
 
 

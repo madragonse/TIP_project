@@ -2,11 +2,13 @@ import {combineReducers} from 'redux'
 import "./userReducer"
 import userInfoReducer from "./userReducer";
 import friendsReducer from "./friendsReducer";
+import phoneReducer from "./phoneReducer";
 
 //all reducers combined
 const rootReducer = combineReducers({
     user: userInfoReducer,
     friends:friendsReducer,
+    phone:phoneReducer
 })
 
 

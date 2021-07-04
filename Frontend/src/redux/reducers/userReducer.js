@@ -17,9 +17,6 @@ export default function userInfoReducer(state = userInitialState, action) {
         case actions.SET_USERNAME:
             localStorage.setItem('username',action.payload);
             return {...state,username:action.payload};
-        case actions.SET_IS_IN_CALL:
-            localStorage.setItem('isInCall',action.payload);
-            return {...state,isInCall:action.payload};
         default:
             return state
     }

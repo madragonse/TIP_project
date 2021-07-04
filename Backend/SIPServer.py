@@ -49,7 +49,7 @@ class SIPProtocol(WebSocketServerProtocol):
         r = requests.get(url=API_URL + '/user/check_auth', headers=headers)
         response = r.json()
 
-        if response['result'] != 'True':
+        if response is None or response['result'] != 'True':
             if debugMode: print("Authorization failed!")
             self.sendHttpErrorResponse(401, "Unauthorized")
             return

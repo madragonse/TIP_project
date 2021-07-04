@@ -10,51 +10,48 @@ const SOUNDS = new Map(
 
 let initialized = false;
 
-module.exports =
-    {
-        initialize() {
-            if (initialized)
-                return;
 
-            for (const sound of SOUNDS.values()) {
-                sound.audio.volume = 0;
+export function initialize() {
+        if (initialized)
+            return;
 
-                try {
-                    sound.audio.play();
-                } catch (error) {
-                }
-            }
+        for (const sound of SOUNDS.values()) {
+            sound.audio.volume = 0;
 
-            initialized = true;
-        },
-
-        play(name, relativeVolume) {
-            this.initialize();
-
-            if (typeof relativeVolume !== 'number') relativeVolume = 1.0;
-
-            const sound = SOUNDS.get(name);
-
-            if (!sound)
-                throw new Error(`unknown sound name "${name}"`);
             try {
-                sound.audio.pause();
-                sound.audio.currentTime = 0.0;
-                sound.audio.volume = (sound.volume || 1.0) * relativeVolume;
                 sound.audio.play();
             } catch (error) {
-                console.warn('play() | error: %o', error);
             }
-        },
-
-        stop(name) {
-            console.debug('stop() [name:%s]', name);
-            const sound = SOUNDS.get(name);
-
-            if (!sound)
-                throw new Error(`unknown sound name "${name}"`);
-
-            sound.audio.pause();
-            sound.audio.currentTime = 0.0;
         }
-    };
+        initialized = true;
+    }
+
+export function play(name, relativeVolume){
+    initialize();
+
+    if (typeof relativeVolume !== 'number') relativeVolume = 1.0;
+
+    const sound = SOUNDS.get(name);
+
+    if (!sound)
+        throw new Error(`unknown sound name "${name}"`);
+    try {
+        sound.audio.pause();
+        sound.audio.currentTime = 0.0;
+        sound.audio.volume = (sound.volume || 1.0) * relativeVolume;
+        sound.audio.play();
+    } catch (error) {
+        console.warn('play() | error: %o', error);
+    }
+}
+
+export function stop(name) {
+        console.debug('stop() [name:%s]', name);
+        const sound = SOUNDS.get(name);
+
+        if (!sound)
+            throw new Error(`unknown sound name "${name}"`);
+
+        sound.audio.pause();
+        sound.audio.currentTime = 0.0;
+    }

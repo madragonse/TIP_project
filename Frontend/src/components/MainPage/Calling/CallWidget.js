@@ -7,8 +7,10 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPhone} from "@fortawesome/free-solid-svg-icons";
+import {PHONE_STATUS} from "./PhoneStatus";
+import {call, setPhoneIncomingSession} from "../../../redux/actions/phoneActions";
 
-function CallWidget({inCall}){
+function CallWidget({status,dispatch}){
     const [uri,setUri]=useState("")
     const [feedbackMessage,setFeedbackMsg]=useState("")
     const callIcon = <FontAwesomeIcon icon={faPhone}/>;
@@ -16,6 +18,9 @@ function CallWidget({inCall}){
     function HandleSubmit(e){
         e.preventDefault();
         //dispatch call event
+        dispatch(call(uri))
+        //test incoming call
+
     }
 
     function handleInput(input){
@@ -25,7 +30,7 @@ function CallWidget({inCall}){
 
     return (
         <div>
-            {!inCall &&
+            { status===PHONE_STATUS.REGISTERED &&
             <div className="CallWidget">
                 <Form onSubmit={HandleSubmit}>
                     <Form.Control
@@ -48,7 +53,7 @@ function CallWidget({inCall}){
 }
 let mapStateToProps = (state)=>{
     return {
-        inCall: state.user.inCall
+        status: state.phone.status
     };
 }
 

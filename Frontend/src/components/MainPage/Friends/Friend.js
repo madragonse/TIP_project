@@ -6,6 +6,7 @@ import {inviteFriend, modifyFriendship} from "../../../serverCommunication/Frien
 import {connect} from "react-redux";
 import {removeFromFriendList} from "../../../redux/actions/friendsActions";
 import {CSSTransition} from "react-transition-group";
+import {call} from "../../../redux/actions/phoneActions";
 
 export class FRIENDS_STATUS {
     static ACTIVE = new FRIENDS_STATUS("ACT", "Friends")
@@ -74,7 +75,7 @@ function Friend({name, status,userId,dispatch}) {
     }, [status])
 
     async function beginCall() {
-
+        dispatch(call(name))
     }
 
     async function invite(){

@@ -1,44 +1,60 @@
 import {connect} from "react-redux";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import Friend, {allStatuses, FRIENDS_STATUS} from "./Friend";
 import {getFriends} from "../../../serverCommunication/FriendsService";
 import "./FriendList.css"
 import {setFriendList} from "../../../redux/actions/friendsActions";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faArrowCircleRight} from "@fortawesome/free-solid-svg-icons";
+import {faArrowCircleLeft} from "@fortawesome/free-solid-svg-icons";
 
 function FriendList({userId, dispatch, actList, decList, rreqList, sreqList}) {
     const [chosenStatus, setChosenStatus] = useState(FRIENDS_STATUS.ACTIVE);
     const [friends,setFriends]= useState([]);
     const [page, setPage] = useState(0);
-    const [pageLength, setPageLength] = useState(10);
+    const [maxPage,setMaxPage]= useState(1)
+    const [pageLength, setPageLength] = useState(4);
     const [loading, setLoading] = useState(true);
+    const rightIcon = <FontAwesomeIcon icon={faArrowCircleRight}/>;
+    const leftIcon = <FontAwesomeIcon icon={faArrowCircleLeft}/>;
 
     async function fetchFriends() {
         setLoading(true);
         let resp = await getFriends(userId, chosenStatus.text, page, pageLength);
         if (resp === undefined) return
 
-        let respArr = JSON.parse(resp);
-        if (respArr.length === 0 || !Array.isArray(respArr)) {
+        let friendsArr = JSON.parse(resp.friends);
+        if (friendsArr.length === 0 || !Array.isArray(friendsArr)) {
             //TODO handle empty friends list
             return;
         }
 
-        let friendsList = respArr.map(
+        let friendsList = friendsArr.map(
             item => {
-                let status = FRIENDS_STATUS.statusFromText(item.status);
-                return <Friend name={item.username} status={status}/>;
+                return <Friend name={item.username} status={chosenStatus}/>;
             })
 
         dispatch(setFriendList(friendsList,chosenStatus.text))
         setLoading(false);
+        setMaxPage(resp.maxPages);
     }
 
+    //on status change, reset page counter and load new list
+    useEffect(() => {
+        setLoading(true);
+        setFriends([])
+        setPage(0)
+        setMaxPage(1)
+        fetchFriends().then();
+    }, [chosenStatus])
 
+    //on page changes, don't reset page counters
     useEffect(() => {
         setLoading(true);
         setFriends([])
         fetchFriends().then();
-    }, [chosenStatus, page, pageLength])
+    }, [page, pageLength])
+
 
     useEffect(()=>{
         if (chosenStatus === FRIENDS_STATUS.ACTIVE) setFriends(actList);
@@ -46,6 +62,13 @@ function FriendList({userId, dispatch, actList, decList, rreqList, sreqList}) {
         if (chosenStatus === FRIENDS_STATUS.REQUESTED_SENT)  setFriends(sreqList);
         if (chosenStatus === FRIENDS_STATUS.DECLINED)  setFriends(decList);
     },[actList,sreqList,rreqList,decList])
+
+
+    function changePage(dir){
+        let newPage=(page+dir)%maxPage;
+        if (newPage<0) newPage=maxPage-1;
+        setPage(newPage);
+    }
 
     let chosenStyle = {
         'fontWeight': 'bold',
@@ -56,6 +79,9 @@ function FriendList({userId, dispatch, actList, decList, rreqList, sreqList}) {
     let fullWidthStyle={
         'width':'100%'
     }
+
+
+
     return (
         <div className="FriendList">
             <div className="StatusChoice">
@@ -72,6 +98,12 @@ function FriendList({userId, dispatch, actList, decList, rreqList, sreqList}) {
             </div>
             <div className="friendsContainer">
                 {!loading && friends}
+
+            </div>
+            <div className="pageController">
+                <button disabled={loading} onClick={()=>changePage(-1)}>{leftIcon}</button>
+                {page+1}/{maxPage}
+                <button disabled={loading} onClick={()=>changePage(1)}>{rightIcon}</button>
             </div>
 
         </div>

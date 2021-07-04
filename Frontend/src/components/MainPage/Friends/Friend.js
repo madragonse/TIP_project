@@ -5,6 +5,8 @@ import {faPhone, faUserMinus, faUserPlus} from "@fortawesome/free-solid-svg-icon
 import {inviteFriend, modifyFriendship} from "../../../serverCommunication/FriendsService";
 import {connect} from "react-redux";
 import {removeFromFriendList} from "../../../redux/actions/friendsActions";
+import {CSSTransition} from "react-transition-group";
+import {call} from "../../../redux/actions/phoneActions";
 
 export class FRIENDS_STATUS {
     static ACTIVE = new FRIENDS_STATUS("ACT", "Friends")
@@ -47,7 +49,7 @@ function Friend({name, status,userId,dispatch}) {
     const [showCall, setShowCall] = useState(false)
     const [showRemove, setShowRemove] = useState(false)
     const [showAdd, setShowAdd] = useState(false)
-
+    const [visible,setVisible] = useState(true)
 
 
     useEffect(() => {
@@ -59,55 +61,64 @@ function Friend({name, status,userId,dispatch}) {
             setShowCall(true)
             setShowRemove(true)
         }
-        if (status === FRIENDS_STATUS.REQUESTED_RECEIVED) {
+        else if (status === FRIENDS_STATUS.REQUESTED_RECEIVED) {
             setShowAdd(true)
             setShowRemove(true)
         }
-        if (status === FRIENDS_STATUS.REQUESTED_SENT) {
+        else if (status === FRIENDS_STATUS.REQUESTED_SENT) {
             setShowRemove(true)
         }
-        if (status === FRIENDS_STATUS.DECLINED) {
+        else if (status === FRIENDS_STATUS.DECLINED) {
             setShowAdd(true)
         }
 
     }, [status])
 
     async function beginCall() {
-
+        dispatch(call(name))
     }
 
     async function invite(){
         await modifyFriendship(userId,name,"invite")
+        setVisible(false)
     }
 
     async function remove(){
         await modifyFriendship(userId,name,"remove")
         dispatch(removeFromFriendList(name,status.text))
+        setVisible(false)
     }
 
 
 return (
-        <div className="Friend">
-            <div className="userInfo">
-                {name}
-            </div>
-            <div className="options">
-                {showCall &&
-                <span onClick={beginCall}>
-                    {callIcon}
-                </span>}
+        <CSSTransition
+            in={visible}
+            timeout={200}
+            classNames="Friend"
+            unmountOnExit
+        >
+            <div className="Friend">
+                <div className="userInfo">
+                    {name}
+                </div>
+                <div className="options">
+                    {showCall &&
+                    <span className="call" onClick={beginCall}>
+                        {callIcon}
+                    </span>}
 
-                {showAdd &&
-                <span onClick={invite}>
-                    {addIcon}
-                </span>}
+                    {showAdd &&
+                    <span className="invite" onClick={invite}>
+                        {addIcon}
+                    </span>}
 
-                {showRemove &&
-                <span onClick={remove}>
-                    {removeIcon}
-                </span>}
+                    {showRemove &&
+                    <span className="remove" onClick={remove}>
+                        {removeIcon}
+                    </span>}
+                </div>
             </div>
-        </div>
+        </CSSTransition>
     );
 }
 let mapStateToProps = (state) => {

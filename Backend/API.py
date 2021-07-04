@@ -1,4 +1,5 @@
 import json
+import math
 
 from flask import Flask, request, jsonify, make_response
 import TIPDb
@@ -8,9 +9,10 @@ from flask_cors import CORS
 from ServerState import *
 
 local_port = '3000'
+sip_server_port = '5001'
 domain = 'localhost:' + local_port
 orgin_prefix = "http://"
-allowed_domains = [domain, '127.0.0.1', '127.0.0.1:' + local_port, 'localhost']
+allowed_domains = [domain, '127.0.0.1', '127.0.0.1:' + local_port, 'localhost', '127.0.0.1:' + sip_server_port]
 # add http:// before each allowed domain to get orgin
 allowed_origins = [orgin_prefix + dom for dom in allowed_domains]
 debug_mode = True
@@ -98,7 +100,38 @@ def login():
     resp = generate_response(request, {"userId": user_id}, 200)
     resp.set_cookie('sessionToken', session_token,
                     secure=False)  # path="user/refresh_session"
+    resp.set_cookie('id', user_id,
+                    secure='false')  # path="/refresh_session"
     return resp
+
+
+@app.route('/user/check_auth', methods=['GET', 'OPTIONS'])
+def check_auth():
+    if request.method == "OPTIONS":
+        return generate_response(request, {}, 200)
+
+    # authorize user
+    if 'cookie' not in request.headers:
+        return generate_response(request, {"error": "Missing session token cookie."}, 401)
+
+    # gets cookie in format key=value; key=value...
+    cookies = request.headers['cookie']
+    # splits into array of seperate key=value cookies
+    cookies_arr = cookies.split('; ')
+    # transform into dict of key:value
+    cookie_dict = {}
+    for cookie in cookies_arr:
+        split_cookie = cookie.split('=')
+        cookie_key = split_cookie[0]
+        cookie_val = split_cookie[1]
+        cookie_dict[cookie_key] = cookie_val
+
+    # check for needed values
+    if ('sessionToken' not in cookie_dict) or ('id' not in cookie_dict):
+        return generate_response(request, {"error": "Missing session token cookie."}, 401)
+    user_id = cookie_dict['id']
+    result = authorize_user(user_id, cookie_dict['sessionToken'])
+    return make_response({"result": str(result), 'user_id': user_id}, 200)
 
 
 @app.route('/user/logout', methods=['GET', 'OPTIONS'])
@@ -128,6 +161,8 @@ def logout():
     # set cookie to a dummy one
     resp = generate_response(request, {"logout": 'succesfull'}, 200)
     resp.set_cookie('sessionToken', 'none',
+                    secure='false')  # path="/refresh_session"
+    resp.set_cookie('id', 'none',
                     secure='false')  # path="/refresh_session"
     return resp
 
@@ -189,6 +224,7 @@ def get_friends(user_id, state, page_vars):
         start = page * friends_per_page
         end = page * friends_per_page + friends_per_page
         friends = db.get_friends(user_id, state, start, end)
+        friends_num = db.count_friends(user_id, state)
 
         data = []
         for friend in friends:
@@ -201,7 +237,10 @@ def get_friends(user_id, state, page_vars):
         if debug_mode: ("DB ERROR" + str(ex))
         return generate_response(request, {"error": "Database error"}, 503)
 
-    return generate_response(request, json.dumps(data), 200)
+    max_pages = int(friends_num / friends_per_page)
+    if friends_num!=friends_per_page:
+        max_pages +=1
+    return generate_response(request, {'maxPages': max_pages, 'friends': json.dumps(data)}, 200)
 
 
 @app.route('/friend/<action>/<user_id>/<friend_name>', methods=['POST', 'OPTIONS'])
@@ -232,44 +271,48 @@ def modify_friendship(action, user_id, friend_name):
             return generate_response(request, {"error": "Befriending oneself is not that easy :("}, 400)
 
         are_friends = db.are_friends(user_id, friend_id)
+        if len(are_friends) != 0:
+            friend_status=are_friends[0][0]
 
         if str(action) == "invite":
             # reinvite if their friendship has been declined
-            if are_friends is None or are_friends[0] == "DEC":
+            if len(are_friends) == 0 or friend_status == "DEC":
                 db.invite_friend(user_id, friend_id)
                 return generate_response(request, {"feedback": "Friend request sent!"}, 200)
 
             # handle already friends
-            if are_friends[0] == "REQ":
+            if  friend_status== "REQ":
                 # true if user was the one to invite
                 user_invited = db.did_user_invite(user_id, friend_id)
 
                 if user_invited:
                     return generate_response(request, {"error": "Invitation already sent!"}, 400)
 
-                db.accept_friend(friend_id,user_id)
+                db.accept_friend(friend_id, user_id)
                 return generate_response(request, {"feedback": "Friend request accepted!"}, 200)
 
-            if are_friends[0] == "ACT":
+            if friend_status == "ACT":
                 return generate_response(request, {"Error": "You are already friends"}, 400)
 
         if str(action) == "remove":
-            if are_friends is None:
+            if len(are_friends) == 0:
                 return generate_response(request, {"error": "You two are not friends!"}, 503)
 
-            if are_friends[0] == "REQ":
+            # true if user was the one to invite
+            user_invited = db.did_user_invite(user_id, friend_id)
+            if friend_status == "REQ" and not user_invited:
                 db.decline_friend(user_id, friend_id)
                 return generate_response(request, {"feedback": "Friendship declined!"}, 200)
 
-            if are_friends[0] == "ACT" or are_friends[0] == "DEC":
-                db.remove_friends(user_id, friend_id)
-                return generate_response(request, {"feedback": "Friend removed successfully!"}, 200)
+            db.remove_friends(user_id, friend_id)
+            return generate_response(request, {"feedback": "Friend removed successfully!"}, 200)
 
     except Exception as ex:
         if debug_mode: ("DB ERROR" + str(ex))
         return generate_response(request, {"error": "Database error"}, 503)
 
     return generate_response(request, {"error": "Unknown error"}, 503)
+
 
 # run flask app
 app.run("127.0.0.1", 5000, debug=True)

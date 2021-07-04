@@ -1,0 +1,56 @@
+.CallWidget{
+    padding: 1.5rem 2rem;
+    margin-top: 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.CallWidget h2{
+    margin-top: 0.5rem;
+    font-size: 1.5rem;
+    color: rgba(250, 251, 250, 0.85);
+}
+.CallWidget .form-control{
+    all:unset;
+    display: inline-block;
+    padding: 0.7rem 5%;
+    width: 60%;
+    margin-top: 0.5rem;
+    color: var(--text-color);
+    background-color: var(--section-bg-color);
+    text-align: left;
+    border-radius: 0.1rem;
+}
+
+.CallWidget button{
+    all:unset;
+    display: inline-block;
+    padding: 0.7rem 5%;
+
+    margin-top: 0.3rem;
+    color: var(--text-color);
+    background-color: var(--section-bg-color);
+    text-align: left;
+}
+
+.CallWidget button:hover{
+    color:var(--sec-color);
+    cursor: pointer;
+}
+
+.CallWidget .feedback{
+    margin-top: 0.5rem;
+    margin-left: 0.5rem;
+    color: var(--text-color);
+    text-align: left;
+}
+.CallWidget .error span{
+    color: var(--fail-color);
+}
+.CallWidget .error span{
+    color: var(--fail-color);
+}
+.CallWidget .success span{
+    color: var(--success-color);
+}

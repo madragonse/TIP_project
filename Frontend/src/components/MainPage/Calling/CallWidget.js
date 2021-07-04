@@ -1,76 +1,59 @@
 import {connect} from "react-redux";
-import {useState} from "react";
+import React, {useState} from "react";
 import "./CallWidget.css"
 import audioPlayer from './AudioPlayer';
 import * as JsSIP from "jssip";
+import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faPhone} from "@fortawesome/free-solid-svg-icons";
+import {PHONE_STATUS} from "./PhoneStatus";
+import {call, setPhoneIncomingSession} from "../../../redux/actions/phoneActions";
 
-function CallWidget({inCallR}){
-    const [inCall,setInCall]= useState(inCallR);
+function CallWidget({status,dispatch}){
+    const [uri,setUri]=useState("")
+    const [feedbackMessage,setFeedbackMsg]=useState("")
+    const callIcon = <FontAwesomeIcon icon={faPhone}/>;
 
-    let socket = new JsSIP.WebSocketInterface('ws://127.0.0.1:5001');
-    let configuration = {
-        sockets  : [ socket ],
-        uri      : 'sip:alice@example.com',
-        password : 'superpassword'
-    };
-    let ua = new JsSIP.UA(configuration);
-    JsSIP.debug.enable('JsSIP:*');
-    ua.start();
-    // //ua.register();
-    //
-    //
-    // // Register callbacks to desired call events
-    // let eventHandlers = {
-    //     'progress': function(e) {
-    //         console.log('call is in progress');
-    //     },
-    //     'failed': function(e) {
-    //         audioPlayer.stop('calling')
-    //         console.log('call failed with cause: '+ e.data.cause);
-    //     },
-    //     'ended': function(e) {
-    //         console.log('call ended with cause: '+ e.data.cause);
-    //     },
-    //     'confirmed': function(e) {
-    //         console.log('call confirmed');
-    //     }
-    // };
-    //
-    // let options = {
-    //     'eventHandlers'    : eventHandlers,
-    //     'mediaConstraints' : { 'audio': true, 'video': true }
-    // };
+    function HandleSubmit(e){
+        e.preventDefault();
+        //dispatch call event
+        dispatch(call(uri))
+        //test incoming call
 
+    }
 
-    function startACall(){
-        // console.log("CONNECTING")
-        // const socket = new WebSocket('ws://localhost:5001');
-        // socket.addEventListener('message', function (event) {
-        //     console.log('WebSocket message: ', event);
-        // });
-        // socket.addEventListener('error', function (event) {
-        //     console.log('WebSocket error: ', event);
-        // });
-        // socket.addEventListener('open', function (event) {
-        //     socket.send("Otworzylo mnie")
-        //     console.log('WebSocket open: ', event);
-        // });
-        //audioPlayer.play('calling')
-        // let session = ua.call('sip:bob@example.com', options);
+    function handleInput(input){
+        setFeedbackMsg("")
+        setUri(input)
     }
 
     return (
-        <div className="CallWidget">
-            <h1>Call Me If you get lost</h1>
-            {inCall}
-            <button onClick={startACall}>CALL ME SOMETIME</button>
-
+        <div>
+            { status===PHONE_STATUS.REGISTERED &&
+            <div className="CallWidget">
+                <Form onSubmit={HandleSubmit}>
+                    <Form.Control
+                        required
+                        placeholder="username or uri"
+                        autoFocus
+                        type="text"
+                        value={uri}
+                        onChange={(e) => handleInput(e.target.value)}
+                    />
+                    <Button type="submit"> {callIcon}</Button>
+                </Form>
+                {feedbackMessage !== "" &&
+                <span className="feedback">{feedbackMessage}</span>
+                }
+            </div>
+            }
         </div>
     );
 }
 let mapStateToProps = (state)=>{
     return {
-        inCall: state.user.inCall
+        status: state.phone.status
     };
 }
 

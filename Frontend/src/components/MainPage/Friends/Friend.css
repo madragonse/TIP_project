@@ -9,6 +9,24 @@
     background-color: #dbdbdb;
     text-align: center;
 }
+
+.Friend-enter {
+    opacity: 0;
+}
+.Friend-enter-active {
+    opacity: 1;
+    transition: opacity 500ms, scale 200ms;
+}
+
+.Friend-exit {
+    opacity: 1;
+}
+.Friend-exit-active {
+    opacity: 0;
+    transform: translateX(-10rem);
+    transition: opacity 500ms, transform 200ms;
+}
+
 .Friend .userInfo{
     font-size: 1.3rem;
     font-weight: 400;

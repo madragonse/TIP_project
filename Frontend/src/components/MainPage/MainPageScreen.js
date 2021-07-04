@@ -3,6 +3,7 @@ import FriendList from "./Friends/FriendList";
 import CallWidget from "./Calling/CallWidget";
 import AddFriend from "./Friends/AddFriend";
 import "./MainPageScreen.css"
+import Phone from "./Calling/Phone";
 
 export default function MainPageScreen() {
 
@@ -12,10 +13,9 @@ export default function MainPageScreen() {
                 <FriendList/>
                 <AddFriend/>
             </div>
+            
+            <Phone/>
 
-            <div className="callContainer">
-                <CallWidget/>
-            </div>
         </div>
     );
 }

@@ -72,8 +72,11 @@ class SIPProtocol(WebSocketServerProtocol):
         #print(msg.stringify())#dev
         msg.__dict__["method"] = ""#dev SIP/2.0 200 OK
         msg.__dict__["uri"] = ""
+        msg.__dict__["headers"]["max-forwards"] =  str(int(msg.__dict__["headers"]["max-forwards"])-1)
         msg.__dict__["headers"]["to"]["params"]["tag"] = "testtagtag"
-        msg.__dict__["headers"]["supported"] = "gruu,outbound"
+        msg.__dict__["headers"]["supported"] = "path,gruu,outbound\r\n"
+        msg.__dict__["headers"].pop('user-agent', None)
+
         #pprint.pprint(msg.__dict__)
 
         ret = "SIP/2.0 200 OK"+"\r\n"+msg.stringify()[11:-2]

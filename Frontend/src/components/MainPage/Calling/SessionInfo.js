@@ -7,6 +7,7 @@ import {formatTimeMinutes} from "../../../Utils";
 import {useEffect} from "react";
 import {SIP_MAX_INVITE_WAIT_TIME} from "../../../serverCommunication/SIPServerUtils";
 import {hangUpPhone} from "../../../redux/actions/phoneActions";
+import {PHONE_STATUS} from "./PhoneStatus";
 
 //used for timer
 const theme = {
@@ -31,29 +32,29 @@ const theme = {
 
 
 
-function SessionInfo({session,incomingSession,dispatch}){
+function SessionInfo({status,session,incomingSession,dispatch}){
     //timer if in call
     //incoming call from whom
     let callingName="someone";
-    const {timer, timerRestart} = useTimer(SIP_MAX_INVITE_WAIT_TIME,-1);
+    const {timer, timeRunOut, timerRestart} = useTimer(SIP_MAX_INVITE_WAIT_TIME,-1);
 
     useEffect(()=>{
         timerRestart();
     },[session])
 
-    //if calling timer has run out on client side, abort call
+    //if calling timer has run out on client side, abort the call
     useEffect(()=>{
-        if (timer===0){
+        if (timeRunOut){
             dispatch(hangUpPhone())
         }
-    },[timer])
+    },[timeRunOut])
 
     return (
         <div className="SessionInfo">
+
             <CSSTransition
-                in={session!==null && incomingSession==null}
-                timeout={200}
-                classNames="currentSessionInfo"
+                in={status===PHONE_STATUS.CALLING}
+                classNames="fade"
                 unmountOnExit
             >
 
@@ -63,7 +64,6 @@ function SessionInfo({session,incomingSession,dispatch}){
                     </h2>
 
                     <div className="timer">
-
                         <Reel  theme={theme}
                                text={formatTimeMinutes(timer)+"s"}
                         />
@@ -74,14 +74,37 @@ function SessionInfo({session,incomingSession,dispatch}){
 
             </CSSTransition>
 
+
             <CSSTransition
-                in={incomingSession!==null && session==null}
-                timeout={200}
-                classNames="incomingSessionInfo"
+                in={status===PHONE_STATUS.IN_CALL}
+                classNames="fade"
+                unmountOnExit
+            >
+
+                <div className="currentSessionInfo inCall">
+                    <h2>with&nbsp;
+                        {session ? session.remote_identity.uri.user:""}
+                    </h2>
+
+                    <div className="timer">
+                        <Reel  theme={theme}
+                               text={formatTimeMinutes(1000)+"s"}
+                        />
+                        <h3>current call time</h3>
+                    </div>
+
+                </div>
+
+            </CSSTransition>
+
+            <CSSTransition
+                in={status===PHONE_STATUS.INCOMING_CALL}
+                classNames="fade"
                 unmountOnExit
             >
                 <div className="incomingSessionInfo">
-                    <h1>incoming session info</h1>
+                    <h2>from
+                        {incomingSession ? incomingSession.remote_identity.uri.user:""}</h2>
                 </div>
             </CSSTransition>
         </div>
@@ -92,6 +115,7 @@ function SessionInfo({session,incomingSession,dispatch}){
 
 let mapStateToProps = (state) => {
     return {
+        status:state.phone.status,
         session:state.phone.session,
         incomingSession:state.phone.incomingSession
     };

@@ -10,9 +10,12 @@ export const HANGUP= 'HANGUP'
 export const PICKUP='PICKUP'
 
 //SETTERS
-export const setUpPhone = (userId) => ({
+export const setUpPhone = (userId,username) => ({
     type: SET_UP,
-    payload:userId
+    payload:{
+        userId:userId,
+        username:username
+    }
 })
 //SETTERS
 export const startPhone = (ua) => ({

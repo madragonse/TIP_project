@@ -43,6 +43,7 @@ function PhoneStatus({status,children}){
         <div className="PhoneStatus">
             <div  className="statusBand" style={{'backgroundColor': status.color}}>
                 <div className="contentContainer" style={borderGlowStyle}>
+
                     {status.desc}
                     {children}
                 </div>

@@ -12,6 +12,9 @@
 .SessionInfo h2{
     color: var(--sec-color);
 }
+.inCall h2{
+    color: var(--success-color);
+}
 
 .SessionInfo h3{
     all:unset;

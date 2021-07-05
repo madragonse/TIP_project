@@ -1,21 +1,18 @@
 import {connect} from "react-redux";
 import React, {useState} from "react";
 import "./CallWidget.css"
-import audioPlayer from './AudioPlayer';
-import * as JsSIP from "jssip";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faPhone} from "@fortawesome/free-solid-svg-icons";
 import {PHONE_STATUS} from "./PhoneStatus";
-import {call, setPhoneIncomingSession} from "../../../redux/actions/phoneActions";
+import {call} from "../../../redux/actions/phoneActions";
+import {CSSTransition} from "react-transition-group";
 
-function CallWidget({status,dispatch}){
-    const [uri,setUri]=useState("")
-    const [feedbackMessage,setFeedbackMsg]=useState("")
+function CallWidget({status, dispatch}) {
+    const [uri, setUri] = useState("")
+    const [feedbackMessage, setFeedbackMsg] = useState("")
 
 
-    function HandleSubmit(e){
+    function HandleSubmit(e) {
         e.preventDefault();
         //dispatch call event
         dispatch(call(uri))
@@ -23,15 +20,20 @@ function CallWidget({status,dispatch}){
 
     }
 
-    function handleInput(input){
+    function handleInput(input) {
         setFeedbackMsg("")
         setUri(input)
     }
 
     return (
-        <div>
-            { status===PHONE_STATUS.REGISTERED &&
+        <CSSTransition
+            in={status === PHONE_STATUS.REGISTERED}
+            classNames="fade"
+            unmountOnExit
+        >
+
             <div className="CallWidget">
+
                 <Form onSubmit={HandleSubmit}>
                     <Form.Control
                         required
@@ -43,15 +45,17 @@ function CallWidget({status,dispatch}){
                     />
                     <Button type="submit"> Call</Button>
                 </Form>
+
                 {feedbackMessage !== "" &&
                 <span className="feedback">{feedbackMessage}</span>
                 }
             </div>
-            }
-        </div>
+
+        </CSSTransition>
     );
 }
-let mapStateToProps = (state)=>{
+
+let mapStateToProps = (state) => {
     return {
         status: state.phone.status
     };

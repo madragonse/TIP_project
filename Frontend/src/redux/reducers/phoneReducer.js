@@ -20,11 +20,13 @@ export default function phoneReducer(state = phoneIntialState, action) {
     switch (action.type) {
         case actions.SET_UP:
             let userId = action.payload.userId;
+            let username = action.payload.username;
             let socket = new JsSIP.WebSocketInterface(SIP_SERVER_URL);
             let uri = getUri(userId)
             let configuration = {
                 sockets: [socket],
                 uri: uri,
+                display_name:username
             };
             let ua = new JsSIP.UA(configuration);
             return {...state, socket: socket, ua: ua, status: PHONE_STATUS.DISCONNECTED, mounted: true};

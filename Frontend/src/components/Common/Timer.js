@@ -14,6 +14,7 @@ const useTimer = (initialState = 0,countDirection=1) => {
     const [timer, setTimer] = useState(initialState)
     const [isActive, setIsActive] = useState(false)
     const [isPaused, setIsPaused] = useState(false)
+    const [timeRunOut,setTimeRunOut]=useState(false)
     const countRef = useRef(null)
 
     const setTime = (time) => {
@@ -23,6 +24,7 @@ const useTimer = (initialState = 0,countDirection=1) => {
     const updateTimer = () =>{
         setTimer((timer) =>{
             let  temp=timer + countDirection;
+            if (temp<0) setTimeRunOut(true)
             return temp<0? 0:temp;
         })
     }
@@ -31,13 +33,14 @@ const useTimer = (initialState = 0,countDirection=1) => {
         setIsActive(true)
         setIsPaused(true)
         countRef.current = setInterval(() => {
-            setTimer((timer) => timer + countDirection)
+            updateTimer();
         }, 1000)
     }
 
     const timerRestart = () => {
         clearInterval(countRef.current)
         setTimer(initialState)
+        setTimeRunOut(false)
         setIsActive(true)
         setIsPaused(true)
         countRef.current = setInterval(() => {
@@ -63,10 +66,11 @@ const useTimer = (initialState = 0,countDirection=1) => {
         clearInterval(countRef.current)
         setIsActive(false)
         setIsPaused(false)
-        setTimer(0)
+        setTimer(initialState)
+        setTimeRunOut(false)
     }
 
-    return { timer, isActive, isPaused, handleStart, handlePause, handleResume, handleReset,timerRestart,setTime }
+    return { timer, isActive, isPaused,timeRunOut, handleStart, handlePause, handleResume, handleReset,timerRestart,setTime }
 }
 
 export default useTimer

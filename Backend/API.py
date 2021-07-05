@@ -296,7 +296,7 @@ def modify_friendship(action, user_id, friend_name):
                 return generate_response(request, {"feedback": "Friend request accepted!"}, 200)
 
             if friend_status == "ACT":
-                return generate_response(request, {"Error": "You are already friends"}, 400)
+                return generate_response(request, {"error": "You are already friends."}, 400)
 
         if str(action) == "remove":
             if len(are_friends) == 0:

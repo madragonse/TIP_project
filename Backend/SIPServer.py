@@ -1,13 +1,13 @@
 import asyncio
 from autobahn.asyncio.websocket import WebSocketServerFactory
 from autobahn.asyncio.websocket import WebSocketServerProtocol
-from sip_parser.exceptions import SipParseError
-from sip_parser.sip_message import SipMessage
 import requests
+from SIP.messages import *
 import pprint
 
 from datetime import datetime, timedelta
 
+from SIP.utils import getIdFromUri
 
 SIP_SERVER_IP = "127.0.0.1"
 SIP_SERVER_PORT = '5001'
@@ -131,17 +131,14 @@ class SIPProtocol(WebSocketServerProtocol):
         msg.__dict__["headers"].pop('user-agent', None)
 
         ret = "SIP/2.0 200 OK" + "\r\n" + msg.stringify()[11:-2]
-        
 
         # TODO
-        username = msg.__dict__["headers"]["from"]["name"]
+        username = msg.__dict__["headers"]["from"]["name"].replace("\"", "")
         address = msg.__dict__["headers"]["from"]["uri"]
-        id = address.split("@")[0].split(':')[1]
+        id = getIdFromUri(address)
 
+        # TODO validate registration?
 
-
-        #TODO validate registration?
-  
         # map registered address
         # registered_users[id] = {
         #     'username' : username,
@@ -158,7 +155,7 @@ class SIPProtocol(WebSocketServerProtocol):
 
         ret = ret.encode('utf-8')
 
-        #save to factory for inter-client communication
+        # save to factory for inter-client communication
         self.factory.register(id, username, self)
 
         self.sendMessage(payload=ret, isBinary=False)
@@ -178,13 +175,38 @@ class SIPProtocol(WebSocketServerProtocol):
     # Content-Length: 0
 
     def on_invite(self, msg):
-        pass
-        # print(msg)
-        # TODO handle person not connected
+        # get all fields into vars for ease of use
+        # via, from_, to, call_id, c_seq
+        via = msg.__dict__["headers"]["via"]
+        to = msg.__dict__["headers"]["to"]
+        from_ = msg.__dict__["headers"]["from"]
+        call_id = msg.__dict__["headers"]["call-id"]
+        cseq = msg.__dict__["headers"]["cseq"]
+        uri = msg.__dict__["headers"]["to"]["uri"]
+
+        """ Handle called person not connected """
+        # user can pass both uri or username to connect to
+        # checking which one of them it is
+        id_or_username = getIdFromUri(uri)
+        # assume it's the ID
+        id = id_or_username
+        # in case the ID is a username and not an ID
+        possible_username = id_or_username.replace("\"", "")
+        possible_id = self.factory.get_id_from_username(possible_username)
+        if possible_id:
+            id = possible_id
+
+        if not possible_id and not self.factory.is_connected(id):
+            msg = get_404_user_not_found(via, from_, to, call_id, cseq)
+            self.sendMessage(payload=msg.encode('utf-8'), isBinary=False)
+            return
 
         # TODO response with trying
 
         # TODO send invite to invited person
+
+        # TODO GET NOT OK
+        # 486 Busy Here – Callee is busy.
 
         # TODO get OK
 
@@ -216,7 +238,6 @@ class SIPProtocol(WebSocketServerProtocol):
             self.on_register(sip_msg)
         elif sip_msg.method == "INVITE":
             self.on_invite(sip_msg)
-
 
 
 if __name__ == '__main__':

@@ -1,6 +1,21 @@
 from sip_parser.exceptions import SipParseError
 from sip_parser.sip_message import SipMessage
+import SIP.utils
 
+#dev
+# #SIP/2.0 404 the member requested is not available
+# Via: SIP/2.0/UDP x.x.x.x:60000;branch=z9hG4bK1
+# From: Jazz Hope<sip:jazz.hope@org1.com>;tag=5
+# To: <sip:mayday@org2.com;user=ip>;tag=f6
+# Call-ID: mNjdwWjkBfWrd@xx.xx.xx.xx
+# CSeq: 55 INVITE
+def get_404_user_not_found(via, from_, to, call_id, c_seq):
+    content = {'method': ' ', 'uri': ' ',
+               'headers': {"via": via, 'from': from_, 'to': to, 'call-id': call_id, 'cseq': c_seq}}
+
+    message = SipMessage.from_dict(content)
+    message = "SIP/2.0 404 User not found" + message.stringify()[11:]
+    return message
 
 def get_trying(via, from_, to, call_id, c_seq, contact=None):
 

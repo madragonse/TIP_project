@@ -34,6 +34,31 @@ def get_ack(via, from_, to, call_id, c_seq, contact=None, method=' ', uri=' ', h
         message = message.stringify()
     return message, message_ob
 
+def get_bye(via, from_, to, call_id, c_seq, contact=None, method=' ', uri=' ', header=None):
+    content = {'method':method, 'uri':uri, 'headers':{"via":via, 'from':from_, 'to':to, 'call-id':call_id, 'cseq':c_seq} }
+    if contact is not None: contact.append['headers']['contact'] = contact
+
+    message = SipMessage.from_dict(content)
+    message_ob = message
+
+    if header is not None:
+        message = header+message.stringify()[11:]
+    else:
+        message = message.stringify()
+    return message, message_ob
+
+
+#dev
+# BYE sip:alice@example.com;gr=urn:uuid:f81-7dec-14a06cf1;ob SIP/2.0
+# Via: SIP/2.0/UDP 203.0.113.22;branch=z9hG4bKbiuiansd001
+# Route: <sip:proxy.example.com;transport=udp;lr>,
+#     <sip:h7kjh12s@proxy.example.com:443;transport=ws;lr>
+# From: sip:bob@example.com;tag=bmqkjhsd
+# To: sip:alice@example.com;tag=asdyka899
+# Call-ID: asidkj3ss
+# CSeq: 1201 BYE
+# Max-Forwards: 70
+
 
 #dev
 # ACK sip:bob@203.0.113.22:5060;transport=udp SIP/2.0

@@ -132,15 +132,15 @@ class SIPProtocol(WebSocketServerProtocol):
         print(type(username))
         print(username)
         # map registered address
-        registered_users[id] = {
-            'username' : username,
-            'registered' : (datetime.now() + timedelta(seconds=int(msg.__dict__["headers"]["expires"]))),
-            'state' : None,
-            'wsInstance' : self
-        }
+        # registered_users[id] = {
+        #     'username' : username,
+        #     'registered' : (datetime.now() + timedelta(seconds=int(msg.__dict__["headers"]["expires"]))),
+        #     'state' : None,
+        #     'wsInstance' : self
+        # }
 
-        if debugMode: print("\tRegister:")
-        if debugMode: print(registered_users)
+        # if debugMode: print("\tRegister:")
+        # if debugMode: print(registered_users)
 
         if debugMode: print("\tResponse:")
         if debugMode: print(ret)

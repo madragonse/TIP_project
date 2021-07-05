@@ -37,19 +37,3 @@
    color:var(--sec-color);
     cursor: pointer;
 }
-
-.AddFriend .feedback{
-    margin-top: 0.5rem;
-    margin-left: 0.5rem;
-    color: var(--text-color);
-    text-align: left;
-}
-.AddFriend .error span{
-    color: var(--fail-color);
-}
-.AddFriend .error span{
-    color: var(--fail-color);
-}
-.AddFriend .success span{
-    color: var(--success-color);
-}

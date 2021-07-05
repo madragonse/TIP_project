@@ -1,14 +1,14 @@
 import asyncio
 from autobahn.asyncio.websocket import WebSocketServerFactory
 from autobahn.asyncio.websocket import WebSocketServerProtocol
-from sip_parser.exceptions import SipParseError
-from sip_parser.sip_message import SipMessage
 import requests
+from SIP.messages import *
 import pprint
 from SIP.messages import get_trying, get_ok, get_ack, get_bye
 
 from datetime import datetime, timedelta
 
+from SIP.utils import getIdFromUri
 
 SIP_SERVER_IP = "127.0.0.1"
 SIP_SERVER_PORT = '5001'
@@ -44,14 +44,25 @@ class InterUserCommunicationServerFactory(WebSocketServerFactory):
 
             }
 
-    #deletes client from registered clients
-    def unregister(self, client):
-        for client_id,values in self.clients.copy().items():
-            if values['socket'] == client:
+    # deletes client from registered clients
+    def unregister(self, socketInstance):
+        for client_id, values in self.clients.copy().items():
+            if values['socket'] == socketInstance:
                 del self.clients[client_id]
                 break
 
-    #sends a msg to given clientId which is the middle part of the URI
+    # returns False if no id can be found
+    def get_id_from_username(self, username):
+        for client_id, values in self.clients.copy().items():
+            if values['name'] == username:
+                return client_id
+
+        return False
+
+    def is_connected(self, client_id):
+        return client_id in self.clients
+
+    # sends a msg to given clientId which is the middle part of the URI
     def send_to_client(self, client_id, msg, isBinary=False):
         if client_id in self.clients:
             self.clients[client_id]['socket'].sendMessage(payload=msg, isBinary=isBinary)
@@ -127,9 +138,11 @@ class SIPProtocol(WebSocketServerProtocol):
         ret = "SIP/2.0 200 OK" + "\r\n" + msg.stringify()[11:-2]
         
         # TODO
-        username = msg.__dict__["headers"]["from"]["name"]
+        username = msg.__dict__["headers"]["from"]["name"].replace("\"", "")
         address = msg.__dict__["headers"]["from"]["uri"]
-        id = address.split("@")[0].split(':')[1]
+        id = getIdFromUri(address)
+
+        # TODO validate registration?
 
         #TODO validate registration?
         pprint.pprint(msg.__dict__)
@@ -147,13 +160,37 @@ class SIPProtocol(WebSocketServerProtocol):
 
 
     def on_invite(self, msg):
-        pass
-        # print(msg)
-        # TODO handle person not connected
+        # get all fields into vars for ease of use
+        via = msg.__dict__["headers"]["via"]
+        to = msg.__dict__["headers"]["to"]
+        from_ = msg.__dict__["headers"]["from"]
+        call_id = msg.__dict__["headers"]["call-id"]
+        cseq = msg.__dict__["headers"]["cseq"]
+        uri = msg.__dict__["headers"]["to"]["uri"]
+
+        """ Handle called person not connected """
+        # user can pass both uri or username to connect to
+        # checking which one of them it is
+        id_or_username = getIdFromUri(uri)
+        # assume it's the ID
+        id = id_or_username
+        # in case the ID is a username and not an ID
+        possible_username = id_or_username.replace("\"", "")
+        possible_id = self.factory.get_id_from_username(possible_username)
+        if possible_id:
+            id = possible_id
+
+        if not possible_id and not self.factory.is_connected(id):
+            msg = get_404_user_not_found(via, from_, to, call_id, cseq)
+            self.sendMessage(payload=msg.encode('utf-8'), isBinary=False)
+            return
 
         # TODO response with trying
 
         # TODO send invite to invited person
+
+        # TODO GET NOT OK
+        # 486 Busy Here – Callee is busy.
 
         # TODO get OK
 
@@ -193,7 +230,6 @@ class SIPProtocol(WebSocketServerProtocol):
             self.on_invite(sip_msg)
 
 
-
 if __name__ == '__main__':
     ServerFactory = InterUserCommunicationServerFactory
 
@@ -214,6 +250,3 @@ if __name__ == '__main__':
     finally:
         server.close()
         loop.close()
-
-
-

@@ -74,40 +74,7 @@ export default function phoneReducer(state = phoneIntialState, action) {
                             offerToReceiveVideo: 0
                         }
                 });
-
-            session.on('connecting', () => {
-                play('ringback');
-                return {...state, session: session,status: PHONE_STATUS.CALLING}
-            });
-
-            session.on('progress', () => {
-                play('ringback');
-            });
-
-            session.on('failed', (data) => {
-                stop('ringback');
-                play('rejected');
-
-                console.log(
-                    {
-                        level: 'error',
-                        title: 'Call failed',
-                        message: data.cause
-                    });
-                return {...state, session: null,status: PHONE_STATUS.REGISTERED}
-            });
-
-            session.on('ended', () => {
-                stop('ringback');
-                return {...state,session:session,status: PHONE_STATUS.REGISTERED}
-            });
-
-            session.on('accepted', () => {
-                stop('ringback');
-                play('answered');
-            });
-
-            return {...state,session: session,status: PHONE_STATUS.CALLING};
+            return {...state,session: session};
         case actions.PICKUP:
             if (state.incomingSession!==null){ state.session=state.incomingSession}
             return {...state, session: state.session,status: PHONE_STATUS.IN_CALL};

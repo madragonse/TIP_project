@@ -18,29 +18,33 @@ import {CSSTransition} from "react-transition-group";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPhone, faPhoneSlash,faMicrophoneSlash,faMicrophone} from "@fortawesome/free-solid-svg-icons";
 import {Tooltip} from "react-bootstrap";
+import Dots from "../../Common/Dots";
 
 function Phone({dispatch, userId,username, ua, session, incomingSession, status}) {
-    const [listenersOn, setListenersOn] = useState(false);
+    //i am aware this is quite a stupid way of going about it, wurks tho
+    const [regListenersOn, setRegListenersOn] = useState(false);
     const [mounted, setMounted] = useState(true)
+    const [callWidgetFeedback,setCallWidgetFeedback]=useState("")
     const pickupIcon = <FontAwesomeIcon icon={faPhone} style={{'color':'var(--success-color)'}}/>;
     const hangupIcon = <FontAwesomeIcon icon={faPhoneSlash} style={{'color':'var(--fail-color)'}}/>;
     const muteIcon =  <FontAwesomeIcon icon={faMicrophoneSlash} style={{'color':'var(--fail-color)'}}/>;
     const unmuteIcon =  <FontAwesomeIcon icon={faMicrophone} style={{'color':'var(--text-color)'}}/>;
 
     useEffect(() => {
-        setListenersOn(false);
+        setRegListenersOn(false);
         setMounted(true);
         dispatch(setUpPhone(userId,username))
     }, [])
 
-    //set up phone listeners
+    //set up phone registration listeners
     useEffect(() => {
         if (!ua) return;
-        if (listenersOn) return;
+        if (regListenersOn) return;
 
-        setListenersOn(true);
+        setRegListenersOn(true);
 
         ua.on('connected', () => {
+
             if (!mounted) return
             dispatch(setPhoneState(PHONE_STATUS.CONNECTED))
             if (SIP_DEBUGGING_MODE) console.log("CONNECTED")
@@ -70,7 +74,7 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
 
             if (ua.isConnected()) dispatch(setPhoneState(PHONE_STATUS.CONNECTED));
             else dispatch(setPhoneState(PHONE_STATUS.DISCONNECTED));
-
+            setCallWidgetFeedback(<div className="feedback error"><span>Error:&nbsp;</span> {data.cause}</div>);
             console.log({
                 level: 'error',
                 title: 'Registration failed',
@@ -100,45 +104,111 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
             }
 
             play('ringing');
-            dispatch(setPhoneIncomingSession(newSession));
+
 
             newSession.on('failed', () => {
                 stop('ringing');
-                dispatch(setPhoneSession(null));
-                dispatch(setPhoneIncomingSession(null));
+                setTimeout(()=>{
+                    dispatch(setPhoneSession(null));
+                    dispatch(setPhoneIncomingSession(null));
+                },1000)
+
             });
 
             newSession.on('ended', () => {
-                dispatch(setPhoneSession(null));
-                dispatch(setPhoneIncomingSession(null));
+                setTimeout(()=>{
+                    dispatch(setPhoneSession(null));
+                    dispatch(setPhoneIncomingSession(null));
+                },1000)
             });
 
             newSession.on('accepted', () => {
+                setTimeout(()=>{
+                    dispatch(setPhoneSession(newSession));
+                    dispatch(setPhoneIncomingSession(null));
+                },1000)
                 stop('ringing');
-                dispatch(setPhoneSession(newSession));
-                dispatch(setPhoneIncomingSession(null));
             });
+
+            dispatch(setPhoneIncomingSession(newSession));
         });
         dispatch(startPhone(ua));
     }, [ua])
 
+    //set up phone call listeners
+    useEffect(() => {
+        if (!session) return;
+
+        session.on('connecting', () => {
+            play('ringback');
+            setCallWidgetFeedback(<div className="feedback neutral"><span>Wait:&nbsp;</span>looking for user<Dots/></div>);
+        });
+
+        session.on('progress', () => {
+            play('ringback');
+            setCallWidgetFeedback(<div className="feedback neutral"><span>Wait:&nbsp;</span>establishing connection<Dots/></div>);
+
+            setTimeout(()=>{
+                dispatch(setPhoneState(PHONE_STATUS.CALLING))
+            },1000)
+
+        });
+
+        session.on('failed', (data) => {
+            stop('ringback');
+            play('rejected');
+
+            console.log(
+                {
+                    level: 'error',
+                    title: 'Call failed',
+                    message: data.cause
+                });
+            setCallWidgetFeedback(<div className="feedback error"><span>Error:&nbsp;</span>User {data.cause}</div>);
+            setTimeout(()=>{
+                dispatch(setPhoneState(PHONE_STATUS.REGISTERED))
+                dispatch(setPhoneSession(null))
+            },1000)
+
+        });
+
+        session.on('ended', () => {
+            stop('ringback');
+            setTimeout(()=>{
+                dispatch(setPhoneState(PHONE_STATUS.REGISTERED))
+                dispatch(setPhoneSession(null))
+            },1000)
+
+        });
+
+        session.on('accepted', () => {
+            stop('ringback');
+            play('answered');
+            setTimeout(()=>{
+                dispatch(setPhoneState(PHONE_STATUS.IN_CALL))
+            },1000)
+
+        });
+
+    },[session]);
+
     function showHangupButton() {
         return status === PHONE_STATUS.IN_CALL || status === PHONE_STATUS.INCOMING_CALL || status === PHONE_STATUS.CALLING;
     }
+
 
     function isMuted(){
         if (!session) return false
         return session.isMuted().audio;
     }
 
-
-
     return (
         <div className="Phone">
             <div className="PhoneContainer">
                 <PhoneStatus>
 
-                    <CallWidget/>
+                    <CallWidget feedback={callWidgetFeedback}/>
+
 
                     <SessionInfo/>
 

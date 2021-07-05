@@ -1,0 +1,44 @@
+.Phone{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+.phoneControls{
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+
+}
+.phoneControls button{
+    all:unset;
+    background-color: var(--section-bg-color);
+    width: 4rem;
+    height: 4rem;
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 400ms smooth;
+}
+
+.phoneControls button:hover{
+    cursor: pointer;
+}
+.phoneControls button:hover svg{
+   transform: scale(1.2);
+
+}
+
+.phoneControls .pickup{
+    color: var(--success-color);
+    margin-right: 2rem;
+}
+
+.phoneControls .hangup{
+    color: var(--fail-color);
+}

@@ -1,0 +1,24 @@
+
+.SessionInfo .timer{
+    font-size: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+    flex-direction: column;
+}
+
+.SessionInfo h2{
+    color: var(--sec-color);
+}
+.inCall h2{
+    color: var(--success-color);
+}
+
+.SessionInfo h3{
+    all:unset;
+    display: block;
+    font-size: 1rem;
+    color: var(--text-color);
+}

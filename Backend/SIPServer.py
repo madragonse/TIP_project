@@ -4,6 +4,10 @@ from autobahn.asyncio.websocket import WebSocketServerProtocol
 from sip_parser.exceptions import SipParseError
 from sip_parser.sip_message import SipMessage
 import requests
+import pprint
+
+from datetime import datetime, timedelta
+
 
 SIP_SERVER_IP = "127.0.0.1"
 SIP_SERVER_PORT = '5001'
@@ -70,10 +74,9 @@ class SIPProtocol(WebSocketServerProtocol):
 
     def on_register(self, msg):
         if debugMode: print("In request:")
-        if debugMode: print(msg)
 
         # modify incoming message to make response
-        msg.__dict__["method"] = ""  # dev SIP/2.0 200 OK
+        msg.__dict__["method"] = ""
         msg.__dict__["uri"] = ""
         msg.__dict__["headers"]["max-forwards"] = str(int(msg.__dict__["headers"]["max-forwards"]) - 1)
         msg.__dict__["headers"]["to"]["params"]["tag"] = "testtagtag"
@@ -83,9 +86,7 @@ class SIPProtocol(WebSocketServerProtocol):
         msg.__dict__["headers"].pop('user-agent', None)
 
         ret = "SIP/2.0 200 OK" + "\r\n" + msg.stringify()[11:-2]
-        ret = ret.encode('utf-8')
-        if debugMode: print("Response")
-        if debugMode: print(ret)
+        
 
         # TODO
         username = msg.__dict__["headers"]["from"]["name"]
@@ -93,11 +94,24 @@ class SIPProtocol(WebSocketServerProtocol):
         id = address.split("@")[0].split(':')[1]
 
         #TODO validate registration?
-
+        pprint.pprint(msg.__dict__)
+        print(type(username))
+        print(username)
         # map registered address
         registered_users[id] = {
-            'username' : username
+            'username' : username,
+            'registered' : (datetime.now() + timedelta(seconds=int(msg.__dict__["headers"]["expires"]))),
+            'state' : None,
+            'wsInstance' : self
         }
+
+        if debugMode: print("\tRegister:")
+        if debugMode: print(registered_users)
+
+        if debugMode: print("\tResponse:")
+        if debugMode: print(ret)
+
+        ret = ret.encode('utf-8')
         self.sendMessage(payload=ret, isBinary=False)
 
     # REGISTER sip:example.com SIP/2.0
@@ -135,7 +149,8 @@ class SIPProtocol(WebSocketServerProtocol):
 
     def onMessage(self, payload, isBinary):
         msg = payload.decode('utf8')
-        if debugMode: print("New message")
+        if debugMode: print("New message--------------------------")
+        if debugMode: print(type(self))
         if debugMode: print(msg)
 
         if len(msg) == 0:

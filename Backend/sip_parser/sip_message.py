@@ -231,10 +231,10 @@ class SipMessage:
 
             msg_str += stringify_header(header_name, header_data) + "\r\n"
 
-        # msg_str += "\r\n"
+        msg_str += "\r\n"
 
-        # if self.content:
-        #     msg_str += self.content
+        if self.content:
+            msg_str += self.content
 
         return msg_str
 

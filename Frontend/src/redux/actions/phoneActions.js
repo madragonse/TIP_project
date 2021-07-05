@@ -5,6 +5,7 @@ export const SET_MOUNTED = 'MOUNTED'
 export const SET_STATE = 'SET_STATE'
 export const SET_SESSION='SET_SESSION'
 export const SET_INCOMING_SESSION='SET_INCOMING_SESSION'
+export const TOOGLE_MUTE='TOOGLE_MUTE'
 export const CALL = 'CALL'
 export const HANGUP= 'HANGUP'
 export const PICKUP='PICKUP'
@@ -36,6 +37,12 @@ export const setPhoneIncomingSession = (incSession) => ({
     type: SET_INCOMING_SESSION,
     payload: incSession
 })
+
+
+export const togglePhoneMute = () => ({
+    type: TOOGLE_MUTE,
+})
+
 export const call = (user) => ({
     type: CALL,
     payload:user

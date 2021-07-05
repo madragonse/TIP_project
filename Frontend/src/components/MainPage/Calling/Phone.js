@@ -7,7 +7,7 @@ import {
     setPhoneSession,
     setPhoneState,
     setUpPhone,
-    startPhone
+    startPhone, togglePhoneMute, tooglePhoneMute
 } from "../../../redux/actions/phoneActions";
 import {play, initialize, stop} from "./AudioPlayer";
 import {SIP_DEBUGGING_MODE} from "../../../serverCommunication/SIPServerUtils";
@@ -16,13 +16,16 @@ import "./Phone.css"
 import SessionInfo from "./SessionInfo";
 import {CSSTransition} from "react-transition-group";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faPhone, faPhoneSlash} from "@fortawesome/free-solid-svg-icons";
+import {faPhone, faPhoneSlash,faMicrophoneSlash,faMicrophone} from "@fortawesome/free-solid-svg-icons";
+import {Tooltip} from "react-bootstrap";
 
 function Phone({dispatch, userId,username, ua, session, incomingSession, status}) {
     const [listenersOn, setListenersOn] = useState(false);
     const [mounted, setMounted] = useState(true)
-    const pickupIcon = <FontAwesomeIcon icon={faPhone}/>;
-    const hangupIcon = <FontAwesomeIcon icon={faPhoneSlash}/>;
+    const pickupIcon = <FontAwesomeIcon icon={faPhone} style={{'color':'var(--success-color)'}}/>;
+    const hangupIcon = <FontAwesomeIcon icon={faPhoneSlash} style={{'color':'var(--fail-color)'}}/>;
+    const muteIcon =  <FontAwesomeIcon icon={faMicrophoneSlash} style={{'color':'var(--fail-color)'}}/>;
+    const unmuteIcon =  <FontAwesomeIcon icon={faMicrophone} style={{'color':'var(--text-color)'}}/>;
 
     useEffect(() => {
         setListenersOn(false);
@@ -123,9 +126,12 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
         return status === PHONE_STATUS.IN_CALL || status === PHONE_STATUS.INCOMING_CALL || status === PHONE_STATUS.CALLING;
     }
 
-    function showPickupButton() {
-        return status === PHONE_STATUS.INCOMING_CALL;
+    function isMuted(){
+        if (!session) return false
+        return session.isMuted().audio;
     }
+
+
 
     return (
         <div className="Phone">
@@ -139,11 +145,11 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
                     <div className="phoneControls">
 
                         <CSSTransition
-                            in={showPickupButton()}
+                            in={status===PHONE_STATUS.INCOMING_CALL}
                             classNames="fade"
                             unmountOnExit
                         >
-                            <button className="pickup" onClick={() => dispatch(pickUpPhone())}>
+                            <button onClick={() => dispatch(pickUpPhone())}>
                                 {pickupIcon}
                             </button>
                         </CSSTransition>
@@ -153,8 +159,31 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
                             classNames="fade"
                             unmountOnExit
                         >
-                            <button className="hangup" onClick={() => dispatch(hangUpPhone())}>
-                                {hangupIcon}
+                            <Tooltip title="hangup the phone">
+                                <button onClick={() => dispatch(hangUpPhone())}>
+                                    {hangupIcon}
+                                </button>
+                            </Tooltip>
+
+                        </CSSTransition>
+
+                        <CSSTransition
+                            in={status === PHONE_STATUS.IN_CALL}
+                            classNames="fade"
+                            unmountOnExit
+                        >
+                            <button onClick={() => dispatch(togglePhoneMute())}>
+
+                                {isMuted() &&
+                                <Tooltip title="click to unmute">
+                                    {muteIcon}
+                                </Tooltip>}
+
+                                {!isMuted() &&
+                                <Tooltip title="click to mute">
+                                    {unmuteIcon}
+                                </Tooltip>}
+
                             </button>
                         </CSSTransition>
 

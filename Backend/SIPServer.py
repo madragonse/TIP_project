@@ -15,9 +15,40 @@ API_URL = API_PREFIX + API_IP + ':' + API_PORT
 
 debugMode = True
 
-# holds all currently registered sockets
-# key is user_id value dict with sip_username,call_id
-registered_users = {}
+
+# abstraction level above protocol, used for holding all clients connected to the server
+# also allows sending message to a specific client
+# ex. in SIP PROTOCOL use self.factory.send_to_client(id,msg)
+class InterUserCommunicationServerFactory(WebSocketServerFactory):
+
+    def __init__(self):
+        WebSocketServerFactory.__init__(self)
+        # holds all currently registered sockets
+        # key is user_id (middle part of URI) value dict with username and socket
+        self.clients = {}
+
+    #adds new client to registered clients
+    def register(self, client_id,client_name, client):
+        if client_id not in self.clients:
+            self.clients[client_id] = {
+                'name':client_name,
+                'socket':client
+            }
+
+    #deletes client from registered clients
+    def unregister(self, client):
+        for client_id,values in self.clients.copy().items():
+            if values['socket'] == client:
+                del self.clients[client_id]
+                break
+
+    #sends a msg to given clientId which is the middle part of the URI
+    def send_to_client(self, client_id, msg, isBinary=False):
+        if client_id in self.clients:
+            self.clients[client_id]['socket'].sendMessage(payload=msg, isBinary=isBinary)
+            return
+
+        print("cannot find to client")
 
 
 class SIPProtocol(WebSocketServerProtocol):
@@ -50,7 +81,6 @@ class SIPProtocol(WebSocketServerProtocol):
 
         # send auth cookie over to API for verification
         try:
-
             r = requests.get(url=API_URL + '/user/check_auth', headers=headers)
             response = r.json()
 
@@ -64,6 +94,10 @@ class SIPProtocol(WebSocketServerProtocol):
         except Exception as ex:
             if debugMode: print("Cannot fetch from API")
             self.failHandshake("Cannot authorize user", code=401)
+
+    def connectionLost(self, reason):
+        WebSocketServerProtocol.connectionLost(self, reason)
+        self.factory.unregister(self)
 
     def onOpen(self):
         if debugMode: print("Connection Opened!")
@@ -92,12 +126,9 @@ class SIPProtocol(WebSocketServerProtocol):
         address = msg.__dict__["headers"]["from"]["uri"]
         id = address.split("@")[0].split(':')[1]
 
-        #TODO validate registration?
+        #save to factory for inter-client communication
+        self.factory.register(id, username, self)
 
-        # map registered address
-        registered_users[id] = {
-            'username' : username
-        }
         self.sendMessage(payload=ret, isBinary=False)
 
     # REGISTER sip:example.com SIP/2.0
@@ -155,7 +186,9 @@ class SIPProtocol(WebSocketServerProtocol):
 
 
 if __name__ == '__main__':
-    factory = WebSocketServerFactory()
+    ServerFactory = InterUserCommunicationServerFactory
+
+    factory = ServerFactory()
     factory.headers = {
         'Sec-WebSocket-Protocol': 'sip'
     }
@@ -172,3 +205,6 @@ if __name__ == '__main__':
     finally:
         server.close()
         loop.close()
+
+
+

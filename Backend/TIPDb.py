@@ -1,10 +1,7 @@
 from datetime import date
 import mysql.connector
+from DBConnectionData import *
 
-db_IP = "127.0.0.1"
-db_user="root"
-db_pass=""
-db_name="movme"
 
 class TIPDb:
 

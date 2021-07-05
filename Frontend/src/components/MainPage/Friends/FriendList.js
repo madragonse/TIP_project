@@ -8,7 +8,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowCircleRight} from "@fortawesome/free-solid-svg-icons";
 import {faArrowCircleLeft} from "@fortawesome/free-solid-svg-icons";
 
-function FriendList({userId, dispatch, actList, decList, rreqList, sreqList}) {
+function FriendList({userId, dispatch, actList, decList, rreqList, sreqList,newRequest}) {
     const [chosenStatus, setChosenStatus] = useState(FRIENDS_STATUS.ACTIVE);
     const [friends,setFriends]= useState([]);
     const [page, setPage] = useState(0);
@@ -61,9 +61,8 @@ function FriendList({userId, dispatch, actList, decList, rreqList, sreqList}) {
         if (chosenStatus === FRIENDS_STATUS.REQUESTED_RECEIVED)  setFriends(rreqList);
         if (chosenStatus === FRIENDS_STATUS.REQUESTED_SENT)  setFriends(sreqList);
         if (chosenStatus === FRIENDS_STATUS.DECLINED)  setFriends(decList);
-    },[actList,sreqList,rreqList,decList])
-
-
+    },[actList, sreqList, rreqList, decList])
+    
     function changePage(dir){
         let newPage=(page+dir)%maxPage;
         if (newPage<0) newPage=maxPage-1;

@@ -27,22 +27,33 @@ class InterUserCommunicationServerFactory(WebSocketServerFactory):
         # key is user_id (middle part of URI) value dict with username and socket
         self.clients = {}
 
-    #adds new client to registered clients
-    def register(self, client_id,client_name, client):
+    # adds new client to registered clients
+    def register(self, client_id, client_name, socketInstance):
         if client_id not in self.clients:
             self.clients[client_id] = {
-                'name':client_name,
-                'socket':client
+                'name': client_name,
+                'socket': socketInstance
             }
 
-    #deletes client from registered clients
-    def unregister(self, client):
-        for client_id,values in self.clients.copy().items():
-            if values['socket'] == client:
+    # deletes client from registered clients
+    def unregister(self, socketInstance):
+        for client_id, values in self.clients.copy().items():
+            if values['socket'] == socketInstance:
                 del self.clients[client_id]
                 break
 
-    #sends a msg to given clientId which is the middle part of the URI
+    # returns False if no id can be found
+    def get_id_from_username(self, username):
+        for client_id, values in self.clients.copy().items():
+            if values['name'] == username:
+                return client_id
+
+        return False
+
+    def is_connected(self, client_id):
+        return client_id in self.clients
+
+    # sends a msg to given clientId which is the middle part of the URI
     def send_to_client(self, client_id, msg, isBinary=False):
         if client_id in self.clients:
             self.clients[client_id]['socket'].sendMessage(payload=msg, isBinary=isBinary)
@@ -126,7 +137,7 @@ class SIPProtocol(WebSocketServerProtocol):
         address = msg.__dict__["headers"]["from"]["uri"]
         id = address.split("@")[0].split(':')[1]
 
-        #save to factory for inter-client communication
+        # save to factory for inter-client communication
         self.factory.register(id, username, self)
 
         self.sendMessage(payload=ret, isBinary=False)
@@ -205,6 +216,3 @@ if __name__ == '__main__':
     finally:
         server.close()
         loop.close()
-
-
-

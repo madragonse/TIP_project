@@ -1,5 +1,4 @@
 
-
 export const formatTime = (timer) => {
     const getSeconds = `0${(timer % 60)}`.slice(-2)
     const minutes = `${Math.floor(timer / 60)}`

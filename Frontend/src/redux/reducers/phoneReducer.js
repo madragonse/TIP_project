@@ -43,6 +43,14 @@ export default function phoneReducer(state = phoneIntialState, action) {
 
         case actions.SET_STATE:
             return {...state, status: action.payload};
+        case actions.TOOGLE_MUTE:
+            if (!state.session) return {...state};
+
+            let nSession = state.session;
+            if (nSession.isMuted().audio)  nSession.unmute();
+            else nSession.mute();
+
+            return {...state, session:nSession};
 
         case actions.CALL:
             let calling = action.payload;

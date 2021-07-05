@@ -57,3 +57,23 @@ Used in CSSTransition react elements
   transition: opacity 200ms;
 }
 
+/*---------------------
+[Feedback msg]
+---------------------*/
+.feedback{
+  margin-top: 0.5rem;
+  margin-left: 0.5rem;
+  color: var(--text-color);
+  text-align: left;
+}
+.error span{
+  color: var(--fail-color);
+}
+
+.success span{
+  color: var(--success-color);
+}
+
+.neutral span{
+  color: var(--primary-color-dark);
+}

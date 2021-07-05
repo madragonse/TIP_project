@@ -1,5 +1,5 @@
 import {connect} from "react-redux";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import "./CallWidget.css"
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
@@ -7,9 +7,9 @@ import {PHONE_STATUS} from "./PhoneStatus";
 import {call} from "../../../redux/actions/phoneActions";
 import {CSSTransition} from "react-transition-group";
 
-function CallWidget({status, dispatch}) {
+function CallWidget({status, dispatch,feedback}) {
     const [uri, setUri] = useState("")
-    const [feedbackMessage, setFeedbackMsg] = useState("")
+    const [feedbackMessage,setFeedbackMessage]=useState("")
 
 
     function HandleSubmit(e) {
@@ -17,11 +17,14 @@ function CallWidget({status, dispatch}) {
         //dispatch call event
         dispatch(call(uri))
         //test incoming call
-
     }
 
+    useEffect(()=>{
+        setFeedbackMessage(feedback)
+    },[feedback])
+
     function handleInput(input) {
-        setFeedbackMsg("")
+        setFeedbackMessage("")
         setUri(input)
     }
 

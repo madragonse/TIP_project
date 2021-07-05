@@ -176,7 +176,6 @@ class SIPProtocol(WebSocketServerProtocol):
 
     def on_invite(self, msg):
         # get all fields into vars for ease of use
-        # via, from_, to, call_id, c_seq
         via = msg.__dict__["headers"]["via"]
         to = msg.__dict__["headers"]["to"]
         from_ = msg.__dict__["headers"]["from"]

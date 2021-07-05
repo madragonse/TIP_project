@@ -5,6 +5,7 @@ from sip_parser.exceptions import SipParseError
 from sip_parser.sip_message import SipMessage
 import requests
 import pprint
+from SIP.messages import get_trying, get_ok, get_ack, get_bye
 
 from datetime import datetime, timedelta
 
@@ -32,11 +33,15 @@ class InterUserCommunicationServerFactory(WebSocketServerFactory):
         self.clients = {}
 
     #adds new client to registered clients
-    def register(self, client_id,client_name, client):
+    def register(self, client_id,client_name, client, expire=30):
         if client_id not in self.clients:
             self.clients[client_id] = {
                 'name':client_name,
-                'socket':client
+                'socket':client,
+                'registered' : datetime.now() + timedelta(seconds=int(expire)),
+                'state' : None,
+                'mutex' : asyncio.Lock()
+
             }
 
     #deletes client from registered clients
@@ -121,7 +126,6 @@ class SIPProtocol(WebSocketServerProtocol):
 
         ret = "SIP/2.0 200 OK" + "\r\n" + msg.stringify()[11:-2]
         
-
         # TODO
         username = msg.__dict__["headers"]["from"]["name"]
         address = msg.__dict__["headers"]["from"]["uri"]
@@ -131,39 +135,16 @@ class SIPProtocol(WebSocketServerProtocol):
         pprint.pprint(msg.__dict__)
         print(type(username))
         print(username)
-        # map registered address
-        # registered_users[id] = {
-        #     'username' : username,
-        #     'registered' : (datetime.now() + timedelta(seconds=int(msg.__dict__["headers"]["expires"]))),
-        #     'state' : None,
-        #     'wsInstance' : self
-        # }
-
-        # if debugMode: print("\tRegister:")
-        # if debugMode: print(registered_users)
 
         if debugMode: print("\tResponse:")
         if debugMode: print(ret)
 
         ret = ret.encode('utf-8')
         #save to factory for inter-client communication
-        self.factory.register(id, username, self)
+        self.factory.register(id, username, self, msg.__dict__["headers"]["expires"])
 
         self.sendMessage(payload=ret, isBinary=False)
 
-    # REGISTER sip:example.com SIP/2.0
-    # Via: SIP/2.0/WS khlt338jf5ff.invalid;branch=z9hG4bK8153962
-    # Max-Forwards: 69
-    # To: <sip:alice@example.com>
-    # From: <sip:alice@example.com>;tag=th6p6vvtcf
-    # Call-ID: 49mgqogse7244c3ksqtdqp
-    # CSeq: 84 REGISTER
-    # Contact: <sip:k8vs8l68@khlt338jf5ff.invalid;transport=ws>;+sip.ice;reg-id=1;+sip.instance="<urn:uuid:24de0b00-b883-4fae-9913-2c5312a386c2>";expires=600
-    # Expires: 600
-    # Allow: INVITE,ACK,CANCEL,BYE,UPDATE,MESSAGE,OPTIONS,REFER,INFO,NOTIFY
-    # Supported: path,gruu,outbound
-    # User-Agent: JsSIP 3.8.0
-    # Content-Length: 0
 
     def on_invite(self, msg):
         pass
@@ -203,6 +184,12 @@ class SIPProtocol(WebSocketServerProtocol):
         if sip_msg.method == "REGISTER":
             self.on_register(sip_msg)
         elif sip_msg.method == "INVITE":
+            self.on_invite(sip_msg)
+        elif sip_msg.method == "OK":
+            self.on_invite(sip_msg)
+        elif sip_msg.method == "ACK":
+            self.on_invite(sip_msg)
+        elif sip_msg.method == "TRYING":
             self.on_invite(sip_msg)
 
 

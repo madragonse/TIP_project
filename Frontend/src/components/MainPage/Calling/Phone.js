@@ -115,7 +115,7 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
                 setTimeout(() => {
                     dispatch(setPhoneSession(null));
                     dispatch(setPhoneIncomingSession(null));
-                }, 1000)
+                }, 100)
 
             });
 
@@ -123,14 +123,14 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
                 setTimeout(() => {
                     dispatch(setPhoneSession(null));
                     dispatch(setPhoneIncomingSession(null));
-                }, 1000)
+                }, 100)
             });
 
             newSession.on('accepted', () => {
                 setTimeout(() => {
                     dispatch(setPhoneSession(newSession));
                     dispatch(setPhoneIncomingSession(null));
-                }, 1000)
+                }, 100)
                 stop('ringing');
             });
 
@@ -150,6 +150,11 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
                     console.log(receiver);
                     remoteStream.addTrack(receiver.track);
                 });
+
+                setTimeout(() => {
+                    dispatch(setPhoneSession(newSession));
+                    dispatch(setPhoneIncomingSession(null));
+                }, 100)
             });
 
             dispatch(setPhoneIncomingSession(newSession));
@@ -160,7 +165,7 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
     //set up phone call listeners
     useEffect(() => {
         if (!session) return;
-        if (phoneListenersOn) return;
+        //if (phoneListenersOn) return;
 
         setPhoneListenersOn(true);
 
@@ -181,10 +186,7 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
 
         });
 
-        session.connection.addEventListener('addstream', function (e) {
-            remoteAudio.srcObject = e.stream;
-        });
-        
+
         session.on('failed', (data) => {
             stop('ringback');
             play('rejected');
@@ -199,7 +201,7 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
             setTimeout(() => {
                 dispatch(setPhoneState(PHONE_STATUS.REGISTERED))
                 dispatch(setPhoneSession(null))
-            }, 1000)
+            }, 100)
 
         });
 
@@ -208,17 +210,22 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
             setTimeout(() => {
                 dispatch(setPhoneState(PHONE_STATUS.REGISTERED))
                 dispatch(setPhoneSession(null))
-            }, 1000)
+            }, 100)
 
+        });
+
+        session.connection.addEventListener('addstream', function (e) {
+            remoteAudio.srcObject = e.stream;
         });
 
         session.on('accepted', () => {
             stop('ringback');
             play('answered');
+            setCallWidgetFeedback("");
+
             setTimeout(() => {
                 dispatch(setPhoneState(PHONE_STATUS.IN_CALL))
-            }, 1000)
-
+            }, 100)
         });
 
     }, [session]);
@@ -294,12 +301,6 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
                     </div>
                 </PhoneStatus>
 
-                {SIP_DEBUGGING_MODE && <div>
-                    <button onClick={() => dispatch(call("test123"))}>simulate call</button>
-                    <button onClick={() => dispatch(setPhoneIncomingSession())}>simulate incoming call</button>
-                    <button onClick={() => dispatch(hangUpPhone())}>end call</button>
-                </div>
-
                 }
             </div>
 
@@ -307,6 +308,11 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
     );
 }
 
+// {SIP_DEBUGGING_MODE && <div>
+//     <button onClick={() => dispatch(call("test123"))}>simulate call</button>
+//     <button onClick={() => dispatch(setPhoneIncomingSession())}>simulate incoming call</button>
+//     <button onClick={() => dispatch(hangUpPhone())}>end call</button>
+// </div>
 
 let mapStateToProps = (state) => {
     return {

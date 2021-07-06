@@ -21,6 +21,15 @@ const useTimer = (initialState = 0,countDirection=1) => {
         setTimer(time);
     }
 
+    const setInitialTime = (init) => {
+        initialState=init;
+        setTimer(init);
+    }
+
+    const setTimerDirection = (dir) => {
+        countDirection=dir;
+    }
+
     const updateTimer = () =>{
         setTimer((timer) =>{
             let  temp=timer + countDirection;
@@ -70,7 +79,7 @@ const useTimer = (initialState = 0,countDirection=1) => {
         setTimeRunOut(false)
     }
 
-    return { timer, isActive, isPaused,timeRunOut, handleStart, handlePause, handleResume, handleReset,timerRestart,setTime }
+    return { timer, isActive, isPaused,timeRunOut, handleStart, handlePause, handleResume, handleReset,timerRestart,setTime,setTimerDirection,setInitialTime }
 }
 
 export default useTimer

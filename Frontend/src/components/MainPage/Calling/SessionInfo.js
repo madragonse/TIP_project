@@ -36,12 +36,21 @@ function SessionInfo({status,session,incomingSession,dispatch}){
     //timer if in call
     //incoming call from whom
     let callingName="someone";
-    const {timer, timeRunOut, timerRestart} = useTimer(SIP_MAX_INVITE_WAIT_TIME,-1);
+    const {timer, timeRunOut, timerRestart,setInitialTime,setTimerDirection} = useTimer(SIP_MAX_INVITE_WAIT_TIME,-1);
 
 
     useEffect(()=>{
         timerRestart();
-    },[session])
+        //if it's a call timer set it to count up
+        if (status===PHONE_STATUS.IN_CALL){
+            setInitialTime(0)
+            setTimerDirection(1)
+            return
+        }
+
+        setInitialTime(SIP_MAX_INVITE_WAIT_TIME)
+        setTimerDirection(-1)
+    },[status])
 
     //if calling timer has run out on client side, abort the call
     useEffect(()=>{
@@ -86,12 +95,12 @@ function SessionInfo({status,session,incomingSession,dispatch}){
 
                 <div className="currentSessionInfo inCall">
                     <h2>with&nbsp;
-                        {session ? session.remote_identity.display_name:""}
+                        {session ? session.remote_identity.uri.user:""}
                     </h2>
 
                     <div className="timer">
                         <Reel  theme={theme}
-                               text={formatTimeMinutes(1000)+"s"}
+                               text={formatTimeMinutes(timer)+"s"}
                         />
                         <h3>current call time</h3>
                     </div>

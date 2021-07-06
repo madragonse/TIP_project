@@ -75,6 +75,7 @@ class InterUserCommunicationServerFactory(WebSocketServerFactory):
             return False
         return self.clients[client_id]['name']
 
+    # returns client id by socket
     def get_id_from_socket(self, socket):
         for client_id, values in self.clients.copy().items():
             if values['socket'] == socket:
@@ -98,6 +99,7 @@ class InterUserCommunicationServerFactory(WebSocketServerFactory):
         self.clients[second]['peer_id'] = -1
         return True
 
+    # returns peered clients id
     def get_peer(self, socket):
         for client_id, values in self.clients.copy().items():
             if values['socket'] == socket:
@@ -187,6 +189,7 @@ class SIPProtocol(WebSocketServerProtocol):
         # passing to peers
         peer_id = self.factory.get_peer(self)
         if not hasattr(sip_msg, 'method'):
+            if debugMode: print("No method-----------+")
             if peer_id is not False:
                 self.pass_to_peer(peer_id, payload, sip_msg)
 

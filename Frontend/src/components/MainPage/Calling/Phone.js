@@ -165,7 +165,7 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
                     title: 'Call failed',
                     message: data.cause
                 });
-            setCallWidgetFeedback(<div className="feedback error"><span>Error:&nbsp;</span>User {data.cause}</div>);
+            setCallWidgetFeedback(<div className="feedback error"><span>Fail:&nbsp;</span>User {data.cause}</div>);
             setTimeout(()=>{
                 dispatch(setPhoneState(PHONE_STATUS.REGISTERED))
                 dispatch(setPhoneSession(null))

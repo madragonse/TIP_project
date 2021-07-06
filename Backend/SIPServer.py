@@ -5,6 +5,7 @@ from autobahn.asyncio.websocket import WebSocketServerProtocol
 import requests
 from SIP.messages import *
 import pprint
+import re
 
 
 SIP_SERVER_IP = "127.0.0.1"
@@ -52,7 +53,6 @@ class InterUserCommunicationServerFactory(WebSocketServerFactory):
                 'name': client_name,
                 'socket': socketInstance,
                 'peer_id': -1,
-                'registered' : datetime.now() + timedelta(seconds=int(expire)),
             }
 
     # deletes client from registered clients

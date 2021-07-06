@@ -23,12 +23,16 @@ import Dots from "../../Common/Dots";
 function Phone({dispatch, userId,username, ua, session, incomingSession, status}) {
     //i am aware this is quite a stupid way of going about it, wurks tho
     const [regListenersOn, setRegListenersOn] = useState(false);
+    const [phoneListenersOn,setPhoneListenersOn]=useState(false);
     const [mounted, setMounted] = useState(true)
     const [callWidgetFeedback,setCallWidgetFeedback]=useState("")
     const pickupIcon = <FontAwesomeIcon icon={faPhone} style={{'color':'var(--success-color)'}}/>;
     const hangupIcon = <FontAwesomeIcon icon={faPhoneSlash} style={{'color':'var(--fail-color)'}}/>;
     const muteIcon =  <FontAwesomeIcon icon={faMicrophoneSlash} style={{'color':'var(--fail-color)'}}/>;
     const unmuteIcon =  <FontAwesomeIcon icon={faMicrophone} style={{'color':'var(--text-color)'}}/>;
+    let remoteAudio = new window.Audio();
+    remoteAudio.autoplay = true;
+    remoteAudio.crossOrigin="anonymous";
 
     useEffect(() => {
         setRegListenersOn(false);
@@ -131,6 +135,24 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
                 stop('ringing');
             });
 
+            newSession.on('peerconnection', (e) => {
+                console.log('peerconnection', e);
+                const peerconnection = e.peerconnection;
+
+                peerconnection.onaddstream = function (e) {
+                    console.log('addstream', e);
+                    remoteAudio.srcObject = e.stream;
+                    remoteAudio.play();
+                };
+
+                let remoteStream = new MediaStream();
+                console.log(peerconnection.getReceivers());
+                peerconnection.getReceivers().forEach(function (receiver) {
+                    console.log(receiver);
+                    remoteStream.addTrack(receiver.track);
+                });
+            });
+
             dispatch(setPhoneIncomingSession(newSession));
         });
         dispatch(startPhone(ua));
@@ -139,6 +161,9 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
     //set up phone call listeners
     useEffect(() => {
         if (!session) return;
+        //if (phoneListenersOn) return;
+
+        setPhoneListenersOn(true);
 
         session.on('connecting', () => {
             play('ringback');
@@ -153,6 +178,24 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
                 dispatch(setPhoneState(PHONE_STATUS.CALLING))
             },1000)
 
+        });
+
+        session.on('peerconnection', (e) => {
+            console.log('peerconnection', e);
+            const peerconnection = e.peerconnection;
+
+            peerconnection.onaddstream = function (e) {
+                console.log('addstream', e);
+                remoteAudio.srcObject = e.stream;
+                remoteAudio.play();
+            };
+
+            let remoteStream = new MediaStream();
+            console.log(peerconnection.getReceivers());
+            peerconnection.getReceivers().forEach(function (receiver) {
+                console.log(receiver);
+                remoteStream.addTrack(receiver.track);
+            });
         });
 
         session.on('failed', (data) => {

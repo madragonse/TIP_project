@@ -8,7 +8,6 @@ import TransitionAppear from "../Common/TransitionAppear";
 export default function MainPageScreen() {
 
     return (
-        <TransitionAppear duration={1000}>
             <div className="MainPageScreen">
                 <div className="friendsContainer">
                     <FriendList/>
@@ -18,6 +17,5 @@ export default function MainPageScreen() {
                 <Phone/>
 
             </div>
-        </TransitionAppear>
     );
 }

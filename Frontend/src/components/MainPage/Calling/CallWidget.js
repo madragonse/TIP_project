@@ -33,6 +33,7 @@ function CallWidget({status, dispatch,feedback}) {
             in={status === PHONE_STATUS.REGISTERED}
             classNames="fade"
             unmountOnExit
+            timeout={0}
         >
 
             <div className="CallWidget">

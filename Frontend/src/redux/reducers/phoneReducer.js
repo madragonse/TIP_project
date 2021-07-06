@@ -26,7 +26,8 @@ export default function phoneReducer(state = phoneIntialState, action) {
             let configuration = {
                 sockets: [socket],
                 uri: uri,
-                display_name:username
+                display_name:username,
+                session_timers: false
             };
             let ua = new JsSIP.UA(configuration);
             return {...state, socket: socket, ua: ua, status: PHONE_STATUS.DISCONNECTED, mounted: true};
@@ -76,7 +77,10 @@ export default function phoneReducer(state = phoneIntialState, action) {
                 });
             return {...state,session: session};
         case actions.PICKUP:
-            if (state.incomingSession!==null){ state.session=state.incomingSession}
+            if (state.incomingSession!==null){
+                state.incomingSession.answer()
+                state.session=state.incomingSession
+            }
             return {...state, session: state.session,status: PHONE_STATUS.IN_CALL};
         case actions.HANGUP:
             let curSes=state.session;

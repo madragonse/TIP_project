@@ -100,6 +100,7 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
                         'status_code': 486,
                         'reason_phrase': 'Busy Here'
                     });
+                dispatch(setPhoneIncomingSession(newSession));
                 return;
             }
 
@@ -218,6 +219,7 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
                             in={status===PHONE_STATUS.INCOMING_CALL}
                             classNames="fade"
                             unmountOnExit
+                            timeout={0}
                         >
                             <button onClick={() => dispatch(pickUpPhone())}>
                                 {pickupIcon}
@@ -228,6 +230,7 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
                             in={showHangupButton()}
                             classNames="fade"
                             unmountOnExit
+                            timeout={0}
                         >
                             <Tooltip title="hangup the phone">
                                 <button onClick={() => dispatch(hangUpPhone())}>
@@ -241,6 +244,7 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
                             in={status === PHONE_STATUS.IN_CALL}
                             classNames="fade"
                             unmountOnExit
+                            timeout={0}
                         >
                             <button onClick={() => dispatch(togglePhoneMute())}>
 

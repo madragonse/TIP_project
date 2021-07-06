@@ -9,13 +9,15 @@ import SIP.utils
 # To: <sip:mayday@org2.com;user=ip>;tag=f6
 # Call-ID: mNjdwWjkBfWrd@xx.xx.xx.xx
 # CSeq: 55 INVITE
-def get_404_user_not_found(via, from_, to, call_id, c_seq):
+def get_code_msg(code, error_msg, via, from_, to, call_id, c_seq):
     content = {'method': ' ', 'uri': ' ',
                'headers': {"via": via, 'from': from_, 'to': to, 'call-id': call_id, 'cseq': c_seq}}
 
     message = SipMessage.from_dict(content)
-    message = "SIP/2.0 404 User not found" + message.stringify()[11:]
+    message_ob = message
+    message = "SIP/2.0 "+str(code)+" "+str(error_msg)+ message.stringify()[11:]
     return message
+
 
 def get_trying(via, from_, to, call_id, c_seq, contact=None):
 
@@ -25,7 +27,7 @@ def get_trying(via, from_, to, call_id, c_seq, contact=None):
     message = SipMessage.from_dict(content)
     message_ob = message
     message = "SIP/2.0 100 Trying"+message.stringify()[11:]
-    return message, message_ob
+    return message
 
 def get_ok(via, from_, to, call_id, c_seq, contact=None):
     content = {'method':' ', 'uri':' ', 'headers':{"via":via, 'from':from_, 'to':to, 'call-id':call_id, 'cseq':c_seq} }
@@ -34,7 +36,7 @@ def get_ok(via, from_, to, call_id, c_seq, contact=None):
     message = SipMessage.from_dict(content)
     message_ob = message
     message = "SIP/2.0 200 OK"+message.stringify()[11:]
-    return message, message_ob
+    return message
 
 def get_ack(via, from_, to, call_id, c_seq, contact=None, method=' ', uri=' ', header=None):
     content = {'method':method, 'uri':uri, 'headers':{"via":via, 'from':from_, 'to':to, 'call-id':call_id, 'cseq':c_seq} }
@@ -47,7 +49,7 @@ def get_ack(via, from_, to, call_id, c_seq, contact=None, method=' ', uri=' ', h
         message = header+message.stringify()[11:]
     else:
         message = message.stringify()
-    return message, message_ob
+    return message
 
 def get_bye(via, from_, to, call_id, c_seq, contact=None, method=' ', uri=' ', header=None):
     content = {'method':method, 'uri':uri, 'headers':{"via":via, 'from':from_, 'to':to, 'call-id':call_id, 'cseq':c_seq} }
@@ -60,5 +62,5 @@ def get_bye(via, from_, to, call_id, c_seq, contact=None, method=' ', uri=' ', h
         message = header+message.stringify()[11:]
     else:
         message = message.stringify()
-    return message, message_ob
+    return message
 

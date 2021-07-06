@@ -38,6 +38,7 @@ function SessionInfo({status,session,incomingSession,dispatch}){
     let callingName="someone";
     const {timer, timeRunOut, timerRestart} = useTimer(SIP_MAX_INVITE_WAIT_TIME,-1);
 
+
     useEffect(()=>{
         timerRestart();
     },[session])
@@ -56,6 +57,7 @@ function SessionInfo({status,session,incomingSession,dispatch}){
                 in={status===PHONE_STATUS.CALLING}
                 classNames="fade"
                 unmountOnExit
+                timeout={0}
             >
 
                 <div className="currentSessionInfo">
@@ -79,11 +81,12 @@ function SessionInfo({status,session,incomingSession,dispatch}){
                 in={status===PHONE_STATUS.IN_CALL}
                 classNames="fade"
                 unmountOnExit
+                timeout={0}
             >
 
                 <div className="currentSessionInfo inCall">
                     <h2>with&nbsp;
-                        {session ? session.remote_identity.uri.user:""}
+                        {session ? session.remote_identity.display_name:""}
                     </h2>
 
                     <div className="timer">
@@ -101,9 +104,10 @@ function SessionInfo({status,session,incomingSession,dispatch}){
                 in={status===PHONE_STATUS.INCOMING_CALL}
                 classNames="fade"
                 unmountOnExit
+                timeout={0}
             >
                 <div className="incomingSessionInfo">
-                    <h2>from
+                    <h2>from&nbsp;
                         {incomingSession ? incomingSession.remote_identity.uri.user:""}</h2>
                 </div>
             </CSSTransition>

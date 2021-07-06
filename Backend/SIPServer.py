@@ -4,7 +4,8 @@ from autobahn.asyncio.websocket import WebSocketServerFactory
 from autobahn.asyncio.websocket import WebSocketServerProtocol
 import requests
 from SIP.messages import *
-import re
+import pprint
+
 
 SIP_SERVER_IP = "127.0.0.1"
 SIP_SERVER_PORT = '5001'
@@ -44,13 +45,14 @@ class InterUserCommunicationServerFactory(WebSocketServerFactory):
         self.clients = {}
         self.SIP_VERSION = "2.0"
 
-    # adds new client to registered clients
-    def register(self, client_id, client_name, socketInstance):
+    #adds new client to registered clients
+    def register(self, client_id,client_name, socketInstance, expire=30):
         if client_id not in self.clients:
             self.clients[client_id] = {
                 'name': client_name,
                 'socket': socketInstance,
                 'peer_id': -1,
+                'registered' : datetime.now() + timedelta(seconds=int(expire)),
             }
 
     # deletes client from registered clients
@@ -88,12 +90,12 @@ class InterUserCommunicationServerFactory(WebSocketServerFactory):
         self.clients[second]['peer_id'] = first
         return True
 
-    def break_peers(self, peer_1_id, peer_2_id):
-        if peer_1_id not in self.clients.copy() or peer_2_id not in self.clients.copy():
+    def break_peers(self, first, second):
+        if first not in self.clients.copy() or second not in self.clients.copy():
             return False
 
-        self.clients[peer_1_id]['peer_id'] = -1
-        self.clients[peer_1_id]['peer_id'] = -1
+        self.clients[first]['peer_id'] = -1
+        self.clients[second]['peer_id'] = -1
         return True
 
     def get_peer(self, socket):
@@ -214,23 +216,25 @@ class SIPProtocol(WebSocketServerProtocol):
         msg.__dict__["headers"].pop('user-agent', None)
 
         ret = "SIP/2.0 200 OK" + "\r\n" + msg.stringify()[11:-2]
-
+        
         # TODO
         username = msg.__dict__["headers"]["from"]["name"].replace("\"", "")
         address = msg.__dict__["headers"]["from"]["uri"]
         id = getIdFromUri(address)
 
+
         if debugMode: print("\tResponse:")
         if debugMode: print(ret)
 
         ret = ret.encode('utf-8')
-
-        # save to factory for inter-client communication
-        self.factory.register(id, username, self)
+        #save to factory for inter-client communication
+        self.factory.register(id, username, self, msg.__dict__["headers"]["expires"])
 
         self.sendMessage(payload=ret, isBinary=False)
 
+
     def on_invite(self, initial_msg):
+
         # get all fields into vars for ease of use
         via = initial_msg.__dict__["headers"]["via"]
         to = initial_msg.__dict__["headers"]["to"]

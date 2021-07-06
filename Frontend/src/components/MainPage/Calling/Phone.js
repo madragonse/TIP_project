@@ -23,9 +23,9 @@ import Dots from "../../Common/Dots";
 function Phone({dispatch, userId, username, ua, session, incomingSession, status}) {
     //i am aware this is quite a stupid way of going about it, wurks tho
     const [regListenersOn, setRegListenersOn] = useState(false);
-    const [phoneListenersOn, setPhoneListenersOn] = useState(false);
     const [mounted, setMounted] = useState(true)
     const [callWidgetFeedback, setCallWidgetFeedback] = useState("")
+    const [localMute,setLocalMute]=useState(false)
     const pickupIcon = <FontAwesomeIcon icon={faPhone} style={{'color': 'var(--success-color)'}}/>;
     const hangupIcon = <FontAwesomeIcon icon={faPhoneSlash} style={{'color': 'var(--fail-color)'}}/>;
     const muteIcon = <FontAwesomeIcon icon={faMicrophoneSlash} style={{'color': 'var(--fail-color)'}}/>;
@@ -127,10 +127,6 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
             });
 
             newSession.on('accepted', () => {
-                setTimeout(() => {
-                    dispatch(setPhoneSession(newSession));
-                    dispatch(setPhoneIncomingSession(null));
-                }, 100)
                 stop('ringing');
             });
 
@@ -150,11 +146,6 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
                     console.log(receiver);
                     remoteStream.addTrack(receiver.track);
                 });
-
-                setTimeout(() => {
-                    dispatch(setPhoneSession(newSession));
-                    dispatch(setPhoneIncomingSession(null));
-                }, 100)
             });
 
             dispatch(setPhoneIncomingSession(newSession));
@@ -165,9 +156,6 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
     //set up phone call listeners
     useEffect(() => {
         if (!session) return;
-        //if (phoneListenersOn) return;
-
-        setPhoneListenersOn(true);
 
         session.on('connecting', () => {
             play('ringback');
@@ -234,10 +222,9 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
         return status === PHONE_STATUS.IN_CALL || status === PHONE_STATUS.INCOMING_CALL || status === PHONE_STATUS.CALLING;
     }
 
-
-    function isMuted() {
-        if (!session) return false
-        return session.isMuted().audio;
+    function toogleMute(){
+        dispatch(togglePhoneMute())
+        setLocalMute(!localMute)
     }
 
     return (
@@ -283,17 +270,13 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
                             unmountOnExit
                             timeout={0}
                         >
-                            <button onClick={() => dispatch(togglePhoneMute())}>
+                            <button onClick={toogleMute}>
 
-                                {isMuted() &&
-                                <Tooltip title="click to unmute">
-                                    {muteIcon}
-                                </Tooltip>}
+                                <Tooltip title= {localMute ? "click to unmute":"click to mute"}>
+                                    {localMute && muteIcon}
+                                    {!localMute && unmuteIcon}
+                                </Tooltip>
 
-                                {!isMuted() &&
-                                <Tooltip title="click to mute">
-                                    {unmuteIcon}
-                                </Tooltip>}
 
                             </button>
                         </CSSTransition>

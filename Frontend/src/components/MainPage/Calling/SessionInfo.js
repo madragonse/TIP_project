@@ -4,7 +4,7 @@ import "./SessionInfo.css"
 import useTimer from "../../Common/Timer";
 import Reel from "react-reel";
 import {formatTimeMinutes} from "../../../Utils";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {SIP_MAX_INVITE_WAIT_TIME} from "../../../serverCommunication/SIPServerUtils";
 import {hangUpPhone} from "../../../redux/actions/phoneActions";
 import {PHONE_STATUS} from "./PhoneStatus";
@@ -35,7 +35,7 @@ const theme = {
 function SessionInfo({status,session,incomingSession,dispatch}){
     //timer if in call
     //incoming call from whom
-    let callingName="someone";
+    const [displayName,setDisplayName]=useState("someone");
     const {timer, timeRunOut, timerRestart,setInitialTime,setTimerDirection} = useTimer(SIP_MAX_INVITE_WAIT_TIME,-1);
 
 
@@ -50,6 +50,22 @@ function SessionInfo({status,session,incomingSession,dispatch}){
 
         setInitialTime(SIP_MAX_INVITE_WAIT_TIME)
         setTimerDirection(-1)
+
+        //display name
+        let temp_name=""
+        if (incomingSession){
+            temp_name=incomingSession.remote_identity.display_name
+            if (!temp_name || temp_name ===""){
+                temp_name=incomingSession.remote_identity.uri.user
+            }
+        }
+        if (session){
+            temp_name=session.remote_identity.display_name
+            if (!temp_name || temp_name ===""){
+                temp_name=session.remote_identity.uri.user
+            }
+        }
+        setDisplayName(temp_name)
     },[status])
 
     //if calling timer has run out on client side, abort the call
@@ -70,9 +86,7 @@ function SessionInfo({status,session,incomingSession,dispatch}){
             >
 
                 <div className="currentSessionInfo">
-                    <h2>calling&nbsp;
-                       {session ? session.remote_identity.uri.user:""}
-                    </h2>
+                    <h2>calling&nbsp;{displayName}</h2>
 
                     <div className="timer">
                         <Reel  theme={theme}
@@ -94,9 +108,7 @@ function SessionInfo({status,session,incomingSession,dispatch}){
             >
 
                 <div className="currentSessionInfo inCall">
-                    <h2>with&nbsp;
-                        {session ? session.remote_identity.uri.user:""}
-                    </h2>
+                    <h2>with&nbsp;{displayName}</h2>
 
                     <div className="timer">
                         <Reel  theme={theme}
@@ -116,8 +128,7 @@ function SessionInfo({status,session,incomingSession,dispatch}){
                 timeout={0}
             >
                 <div className="incomingSessionInfo">
-                    <h2>from&nbsp;
-                        {incomingSession ? incomingSession.remote_identity.uri.user:""}</h2>
+                    <h2>from&nbsp;{displayName}</h2>
                 </div>
             </CSSTransition>
         </div>

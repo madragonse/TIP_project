@@ -77,19 +77,20 @@ export default function phoneReducer(state = phoneIntialState, action) {
                 });
             return {...state,session: session};
         case actions.PICKUP:
-            if (state.incomingSession!==null){
-                state.incomingSession.answer()
-                state.session=state.incomingSession
+            let incSess=state.incomingSession
+            if (incSess && !incSess.isEstablished()){
+                incSess.answer()
+                return {...state, session: incSess,status: PHONE_STATUS.IN_CALL};
             }
-            return {...state, session: state.session,status: PHONE_STATUS.IN_CALL};
+            return {...state};
         case actions.HANGUP:
             let curSes=state.session;
             let incSes=state.incomingSession;
-            if (curSes){
+            if (curSes && curSes.isEstablished()){
                 curSes.terminate();
                 curSes=null;
             }
-            if (incSes){
+            if (incSes && incSes.isEstablished()){
                 incSes.terminate();
                 incSes=null;
             }

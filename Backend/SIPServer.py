@@ -48,12 +48,11 @@ class InterUserCommunicationServerFactory(WebSocketServerFactory):
 
     # adds new client to registered clients
     def register(self, client_id, client_name, socketInstance, expire=30):
-        if client_id not in self.clients:
-            self.clients[client_id] = {
-                'name': client_name,
-                'socket': socketInstance,
-                'peer_id': -1,
-            }
+        self.clients[client_id] = {
+            'name': client_name,
+            'socket': socketInstance,
+            'peer_id': -1,
+        }
 
     # deletes client from registered clients
     def unregister(self, socketInstance):
@@ -166,8 +165,10 @@ class SIPProtocol(WebSocketServerProtocol):
             self.failHandshake("Cannot authorize user", code=401)
 
     def connectionLost(self, reason):
-        WebSocketServerProtocol.connectionLost(self, reason)
         self.factory.unregister(self)
+        #TODO send BYE to peer
+        WebSocketServerProtocol.connectionLost(self, reason)
+
 
     def onOpen(self):
         if debugMode: print("Connection Opened!")

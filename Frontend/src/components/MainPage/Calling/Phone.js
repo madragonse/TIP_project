@@ -16,28 +16,28 @@ import "./Phone.css"
 import SessionInfo from "./SessionInfo";
 import {CSSTransition} from "react-transition-group";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faPhone, faPhoneSlash,faMicrophoneSlash,faMicrophone} from "@fortawesome/free-solid-svg-icons";
+import {faPhone, faPhoneSlash, faMicrophoneSlash, faMicrophone} from "@fortawesome/free-solid-svg-icons";
 import {Tooltip} from "react-bootstrap";
 import Dots from "../../Common/Dots";
 
-function Phone({dispatch, userId,username, ua, session, incomingSession, status}) {
+function Phone({dispatch, userId, username, ua, session, incomingSession, status}) {
     //i am aware this is quite a stupid way of going about it, wurks tho
     const [regListenersOn, setRegListenersOn] = useState(false);
-    const [phoneListenersOn,setPhoneListenersOn]=useState(false);
+    const [phoneListenersOn, setPhoneListenersOn] = useState(false);
     const [mounted, setMounted] = useState(true)
-    const [callWidgetFeedback,setCallWidgetFeedback]=useState("")
-    const pickupIcon = <FontAwesomeIcon icon={faPhone} style={{'color':'var(--success-color)'}}/>;
-    const hangupIcon = <FontAwesomeIcon icon={faPhoneSlash} style={{'color':'var(--fail-color)'}}/>;
-    const muteIcon =  <FontAwesomeIcon icon={faMicrophoneSlash} style={{'color':'var(--fail-color)'}}/>;
-    const unmuteIcon =  <FontAwesomeIcon icon={faMicrophone} style={{'color':'var(--text-color)'}}/>;
+    const [callWidgetFeedback, setCallWidgetFeedback] = useState("")
+    const pickupIcon = <FontAwesomeIcon icon={faPhone} style={{'color': 'var(--success-color)'}}/>;
+    const hangupIcon = <FontAwesomeIcon icon={faPhoneSlash} style={{'color': 'var(--fail-color)'}}/>;
+    const muteIcon = <FontAwesomeIcon icon={faMicrophoneSlash} style={{'color': 'var(--fail-color)'}}/>;
+    const unmuteIcon = <FontAwesomeIcon icon={faMicrophone} style={{'color': 'var(--text-color)'}}/>;
     let remoteAudio = new window.Audio();
     remoteAudio.autoplay = true;
-    remoteAudio.crossOrigin="anonymous";
+    remoteAudio.crossOrigin = "anonymous";
 
     useEffect(() => {
         setRegListenersOn(false);
         setMounted(true);
-        dispatch(setUpPhone(userId,username))
+        dispatch(setUpPhone(userId, username))
     }, [])
 
     //set up phone registration listeners
@@ -110,28 +110,27 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
 
             play('ringing');
 
-
             newSession.on('failed', () => {
                 stop('ringing');
-                setTimeout(()=>{
+                setTimeout(() => {
                     dispatch(setPhoneSession(null));
                     dispatch(setPhoneIncomingSession(null));
-                },1000)
+                }, 1000)
 
             });
 
             newSession.on('ended', () => {
-                setTimeout(()=>{
+                setTimeout(() => {
                     dispatch(setPhoneSession(null));
                     dispatch(setPhoneIncomingSession(null));
-                },1000)
+                }, 1000)
             });
 
             newSession.on('accepted', () => {
-                setTimeout(()=>{
+                setTimeout(() => {
                     dispatch(setPhoneSession(newSession));
                     dispatch(setPhoneIncomingSession(null));
-                },1000)
+                }, 1000)
                 stop('ringing');
             });
 
@@ -161,43 +160,31 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
     //set up phone call listeners
     useEffect(() => {
         if (!session) return;
-        //if (phoneListenersOn) return;
+        if (phoneListenersOn) return;
 
         setPhoneListenersOn(true);
 
         session.on('connecting', () => {
             play('ringback');
-            setCallWidgetFeedback(<div className="feedback neutral"><span>Wait:&nbsp;</span>looking for user<Dots/></div>);
+            setCallWidgetFeedback(<div className="feedback neutral"><span>Wait:&nbsp;</span>looking for user<Dots/>
+            </div>);
         });
 
         session.on('progress', () => {
             play('ringback');
-            setCallWidgetFeedback(<div className="feedback neutral"><span>Wait:&nbsp;</span>establishing connection<Dots/></div>);
+            setCallWidgetFeedback(<div className="feedback neutral"><span>Wait:&nbsp;</span>establishing
+                connection<Dots/></div>);
 
-            setTimeout(()=>{
+            setTimeout(() => {
                 dispatch(setPhoneState(PHONE_STATUS.CALLING))
-            },1000)
+            }, 1000)
 
         });
 
-        session.on('peerconnection', (e) => {
-            console.log('peerconnection', e);
-            const peerconnection = e.peerconnection;
-
-            peerconnection.onaddstream = function (e) {
-                console.log('addstream', e);
-                remoteAudio.srcObject = e.stream;
-                remoteAudio.play();
-            };
-
-            let remoteStream = new MediaStream();
-            console.log(peerconnection.getReceivers());
-            peerconnection.getReceivers().forEach(function (receiver) {
-                console.log(receiver);
-                remoteStream.addTrack(receiver.track);
-            });
+        session.connection.addEventListener('addstream', function (e) {
+            remoteAudio.srcObject = e.stream;
         });
-
+        
         session.on('failed', (data) => {
             stop('ringback');
             play('rejected');
@@ -209,39 +196,39 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
                     message: data.cause
                 });
             setCallWidgetFeedback(<div className="feedback error"><span>Fail:&nbsp;</span>User {data.cause}</div>);
-            setTimeout(()=>{
+            setTimeout(() => {
                 dispatch(setPhoneState(PHONE_STATUS.REGISTERED))
                 dispatch(setPhoneSession(null))
-            },1000)
+            }, 1000)
 
         });
 
         session.on('ended', () => {
             stop('ringback');
-            setTimeout(()=>{
+            setTimeout(() => {
                 dispatch(setPhoneState(PHONE_STATUS.REGISTERED))
                 dispatch(setPhoneSession(null))
-            },1000)
+            }, 1000)
 
         });
 
         session.on('accepted', () => {
             stop('ringback');
             play('answered');
-            setTimeout(()=>{
+            setTimeout(() => {
                 dispatch(setPhoneState(PHONE_STATUS.IN_CALL))
-            },1000)
+            }, 1000)
 
         });
 
-    },[session]);
+    }, [session]);
 
     function showHangupButton() {
         return status === PHONE_STATUS.IN_CALL || status === PHONE_STATUS.INCOMING_CALL || status === PHONE_STATUS.CALLING;
     }
 
 
-    function isMuted(){
+    function isMuted() {
         if (!session) return false
         return session.isMuted().audio;
     }
@@ -259,7 +246,7 @@ function Phone({dispatch, userId,username, ua, session, incomingSession, status}
                     <div className="phoneControls">
 
                         <CSSTransition
-                            in={status===PHONE_STATUS.INCOMING_CALL}
+                            in={status === PHONE_STATUS.INCOMING_CALL}
                             classNames="fade"
                             unmountOnExit
                             timeout={0}

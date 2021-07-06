@@ -1,3 +1,4 @@
+import _asyncio
 import asyncio
 import time
 from autobahn.asyncio.websocket import WebSocketServerFactory
@@ -6,7 +7,6 @@ import requests
 from SIP.messages import *
 import pprint
 import re
-
 
 SIP_SERVER_IP = "127.0.0.1"
 SIP_SERVER_PORT = '5001'
@@ -46,8 +46,8 @@ class InterUserCommunicationServerFactory(WebSocketServerFactory):
         self.clients = {}
         self.SIP_VERSION = "2.0"
 
-    #adds new client to registered clients
-    def register(self, client_id,client_name, socketInstance, expire=30):
+    # adds new client to registered clients
+    def register(self, client_id, client_name, socketInstance, expire=30):
         if client_id not in self.clients:
             self.clients[client_id] = {
                 'name': client_name,
@@ -114,7 +114,8 @@ class InterUserCommunicationServerFactory(WebSocketServerFactory):
     # sends a msg to given clientId which is the middle part of the URI
     def send_to_client(self, client_id, msg, isBinary=False):
         if client_id in self.clients.copy():
-            self.clients[client_id]['socket'].sendMessage(payload=msg, isBinary=isBinary)
+            socket = self.clients[client_id]['socket']
+            socket.sendMessage(payload=msg, isBinary=isBinary)
             return
 
         print("cannot find to client")
@@ -124,6 +125,9 @@ class SIPProtocol(WebSocketServerProtocol):
 
     def __init__(self):
         super().__init__()
+
+    def is_open(self):
+        return self.is_open()
 
     def onConnect(self, request):
         if debugMode: print("New connection!")
@@ -219,22 +223,20 @@ class SIPProtocol(WebSocketServerProtocol):
         msg.__dict__["headers"].pop('user-agent', None)
 
         ret = "SIP/2.0 200 OK" + "\r\n" + msg.stringify()[11:-2]
-        
+
         # TODO
         username = msg.__dict__["headers"]["from"]["name"].replace("\"", "")
         address = msg.__dict__["headers"]["from"]["uri"]
         id = getIdFromUri(address)
 
-
         if debugMode: print("\tResponse:")
         if debugMode: print(ret)
 
         ret = ret.encode('utf-8')
-        #save to factory for inter-client communication
+        # save to factory for inter-client communication
         self.factory.register(id, username, self, msg.__dict__["headers"]["expires"])
 
         self.sendMessage(payload=ret, isBinary=False)
-
 
     def on_invite(self, initial_msg):
 

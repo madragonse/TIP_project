@@ -1,8 +1,11 @@
+from typing import Dict
 import _asyncio
 import asyncio
 import time
 from autobahn.asyncio.websocket import WebSocketServerFactory
 from autobahn.asyncio.websocket import WebSocketServerProtocol
+from autobahn.websocket.protocol
+
 import requests
 from SIP.messages import *
 import pprint
@@ -32,6 +35,7 @@ def getIdFromUri(uri):
 # uri in format sip:ID@DOMANINNAME
 def getUriFromId(id):
     return "sip:" + str(id) + "@" + str(SIP_SERVER_IP)
+
 
 
 # abstraction level above protocol, used for holding all clients connected to the server
@@ -92,6 +96,7 @@ class InterUserCommunicationServerFactory(WebSocketServerFactory):
         return True
 
     def break_peers(self, first, second):
+        if debugMode: print("*Breaking peers: "+str(first)+" , "+str(second))
         if first not in self.clients.copy() or second not in self.clients.copy():
             return False
 
@@ -119,6 +124,9 @@ class InterUserCommunicationServerFactory(WebSocketServerFactory):
             return
 
         print("cannot find to client")
+
+    def print_register(self):
+        pprint.pprint(self.clients)
 
 
 class SIPProtocol(WebSocketServerProtocol):
@@ -176,9 +184,10 @@ class SIPProtocol(WebSocketServerProtocol):
 
     def onMessage(self, payload, isBinary):
         msg = payload.decode('utf8')
-        if debugMode: print("New message--------------------------")
-        if debugMode: print(type(self))
+        if debugMode: print("\n--------------------------New message--------------------------")
+        if debugMode: print("From: "+str(self.factory.get_id_from_socket(self))+" - "+ str(self.factory.get_username_from_id(self.factory.get_id_from_socket(self))))
         if debugMode: print(msg)
+        if debugMode: self.factory.print_register()
 
         if len(msg) == 0:
             return
@@ -192,13 +201,15 @@ class SIPProtocol(WebSocketServerProtocol):
 
         # passing to peers
         peer_id = self.factory.get_peer(self)
+        if debugMode: print("*peer_id: "+str(peer_id))
         if not hasattr(sip_msg, 'method'):
-            if debugMode: print("No method-----------+")
+            if debugMode: print("*No method")
             if peer_id is not False:
+                if debugMode: print("PASS_TO_PEER")
+                if debugMode: print("*peer_id: "+str(peer_id)+" payload_size: "+str(len(payload)))
                 self.pass_to_peer(peer_id, payload, sip_msg)
 
             return
-
         method = sip_msg.method
         if method == "REGISTER":
             self.on_register(sip_msg)
@@ -210,7 +221,7 @@ class SIPProtocol(WebSocketServerProtocol):
             self.on_cancel(peer_id)
 
     def on_register(self, msg):
-        if debugMode: print("In request:")
+        if debugMode: print("REGISTER")
 
         # modify incoming message to make response
         msg.__dict__["method"] = ""
@@ -235,11 +246,11 @@ class SIPProtocol(WebSocketServerProtocol):
         ret = ret.encode('utf-8')
         # save to factory for inter-client communication
         self.factory.register(id, username, self, msg.__dict__["headers"]["expires"])
-
+        if debugMode: self.factory.print_register()
         self.sendMessage(payload=ret, isBinary=False)
 
     def on_invite(self, initial_msg):
-
+        if debugMode: print("INVITE")
         # get all fields into vars for ease of use
         via = initial_msg.__dict__["headers"]["via"]
         to = initial_msg.__dict__["headers"]["to"]
@@ -252,6 +263,7 @@ class SIPProtocol(WebSocketServerProtocol):
         # establish_id returns false if user cannot be found
         invitee_id = self.establish_id(uri)
         if invitee_id is False:
+            if debugMode: print("*User not found - sending 404")
             msg = get_code_msg(404, "user not found", via, from_, to, call_id, cseq)
             self.sendMessage(payload=msg.encode('utf-8'), isBinary=False)
             return
@@ -260,6 +272,7 @@ class SIPProtocol(WebSocketServerProtocol):
         end_username = self.factory.get_username_from_id(invitee_id)
 
         """ respond to calling person with trying """
+        if debugMode: print("*Send TRYING")
         msg = get_trying(via, from_, to, call_id, cseq)
         self.sendMessage(payload=msg.encode('utf-8'), isBinary=False)
 
@@ -275,9 +288,12 @@ class SIPProtocol(WebSocketServerProtocol):
         """ Update user states """
         # update invitee state
         inviter_id = self.factory.get_id_from_socket(self)
+        if debugMode: print("*Making peers: "+" inviter_id: "+str(inviter_id)+", invitee_id: "+str(invitee_id))
         self.factory.make_peers(inviter_id, invitee_id)
         time.sleep(1)
         # send invite to the other user
+        if debugMode: self.factory.print_register()
+        if debugMode: print("*Send modified INVITE")
         self.factory.send_to_client(invitee_id, msg)
 
     def establish_id(self, uri):
@@ -298,17 +314,20 @@ class SIPProtocol(WebSocketServerProtocol):
         return end_id
 
     def pass_to_peer(self, peer_id, unedited_msg, sip_msg):
+        if debugMode: print("PEER")
         if not peer_id:
+            if debugMode: print("no peer")
             return
 
         # status = int(sip_msg.__dict__['status'])
         # if 99 < status < 200:
         #     return
 
-        print("Passing msg to peer")
+        if debugMode: print("args - "+" peer_id: "+str(peer_id) + " , unedited_msg_length: "+str(len(unedited_msg)))
         self.factory.send_to_client(peer_id, unedited_msg)
 
     def on_cancel(self, peer_id):
+        if debugMode: print("CANCEL")
         if not peer_id:
             return
 

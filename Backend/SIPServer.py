@@ -204,7 +204,7 @@ class SIPProtocol(WebSocketServerProtocol):
         elif method == "ACK":
             self.pass_to_peer(peer_id, payload, sip_msg)
         elif method == "CANCEL" or method == "BYE":
-            self.on_cancel(peer_id)
+            self.on_cancel(peer_id,payload)
 
     def on_register(self, msg):
         if debugMode: print("In request:")
@@ -305,9 +305,12 @@ class SIPProtocol(WebSocketServerProtocol):
         print("Passing msg to peer")
         self.factory.send_to_client(peer_id, unedited_msg)
 
-    def on_cancel(self, peer_id):
+    def on_cancel(self, peer_id,unedited_msg):
         if not peer_id:
             return
+
+        #notify client of end
+        self.factory.send_to_client(peer_id, unedited_msg)
 
         sock_id = self.factory.get_id_from_socket(self)
         self.factory.break_peers(peer_id, sock_id)

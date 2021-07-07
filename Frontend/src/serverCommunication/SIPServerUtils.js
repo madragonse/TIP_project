@@ -2,7 +2,7 @@ import * as JsSIP from "jssip";
 import {sha256} from "js-sha256";
 
 const SIP_SERVER = {
-    IP: '127.0.0.1',
+    IP: '192.168.43.64',
     PORT: '5001',
     PROTOCOL:'ws'
 }

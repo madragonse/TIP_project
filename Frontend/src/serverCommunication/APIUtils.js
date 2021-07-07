@@ -1,7 +1,7 @@
 import {logout} from "./LogRegService"
 
 const API = {
-    IP: '127.0.0.1',
+    IP: '192.168.43.64',
     PORT: '5000',
 }
 //no backtick at the end

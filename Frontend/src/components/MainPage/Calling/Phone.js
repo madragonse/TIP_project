@@ -90,13 +90,17 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
             if (!mounted) return
 
             if (SIP_DEBUGGING_MODE) console.log("New RTC session")
-
+            if (SIP_DEBUGGING_MODE) console.log("1")
             //prevent user from calling himself
             if (data.originator === 'local')
+            {
+                if (SIP_DEBUGGING_MODE) console.log("1")
                 return;
-
+            }
+                
+            if (SIP_DEBUGGING_MODE) console.log("1")
             const newSession = data.session;
-
+            if (SIP_DEBUGGING_MODE) console.log("1")
             // Avoid if busy or other incoming
             if (session || incomingSession) {
                 newSession.terminate(
@@ -107,6 +111,7 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
                 dispatch(setPhoneIncomingSession(newSession));
                 return;
             }
+            if (SIP_DEBUGGING_MODE) console.log("1")
 
             play('ringing');
 
@@ -118,6 +123,7 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
                 }, 1000)
 
             });
+            if (SIP_DEBUGGING_MODE) console.log("1")
 
             newSession.on('ended', () => {
                 setTimeout(() => {
@@ -125,7 +131,7 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
                     dispatch(setPhoneIncomingSession(null));
                 }, 1000)
             });
-
+            if (SIP_DEBUGGING_MODE) console.log("1")
             newSession.on('accepted', () => {
                 setTimeout(() => {
                     dispatch(setPhoneSession(newSession));
@@ -133,17 +139,17 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
                 }, 1000)
                 stop('ringing');
             });
-
+            if (SIP_DEBUGGING_MODE) console.log("1")
             newSession.on('peerconnection', (e) => {
                 console.log('peerconnection', e);
                 const peerconnection = e.peerconnection;
-
+                if (SIP_DEBUGGING_MODE) console.log("1")
                 peerconnection.onaddstream = function (e) {
                     console.log('addstream', e);
                     remoteAudio.srcObject = e.stream;
                     remoteAudio.play();
                 };
-
+                if (SIP_DEBUGGING_MODE) console.log("1")
                 let remoteStream = new MediaStream();
                 console.log(peerconnection.getReceivers());
                 peerconnection.getReceivers().forEach(function (receiver) {
@@ -151,7 +157,7 @@ function Phone({dispatch, userId, username, ua, session, incomingSession, status
                     remoteStream.addTrack(receiver.track);
                 });
             });
-
+            
             dispatch(setPhoneIncomingSession(newSession));
         });
         dispatch(startPhone(ua));

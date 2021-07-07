@@ -12,7 +12,9 @@ local_port = '3000'
 sip_server_port = '5001'
 domain = 'localhost:' + local_port
 orgin_prefix = "http://"
-allowed_domains = [domain, '127.0.0.1', '127.0.0.1:' + local_port, 'localhost', '127.0.0.1:' + sip_server_port]
+allowed_domains = [domain, '127.0.0.1', '127.0.0.1:' + local_port, 'localhost', '127.0.0.1:' + sip_server_port,
+                    "192.168.43.64:"+ "5000", '192.168.43.64', '192.168.43.64:' + local_port, 'localhost', '192.168.43.64:' + sip_server_port,
+                    'localhost:'+ "5000", 'localhost:'+ "5001", 'localhost:'+ "3000", '192.168.43.64:']
 # add http:// before each allowed domain to get orgin
 allowed_origins = [orgin_prefix + dom for dom in allowed_domains]
 debug_mode = True
@@ -319,4 +321,4 @@ def modify_friendship(action, user_id, friend_name):
 
 
 # run flask app
-app.run("127.0.0.1", 5000, debug=True)
+app.run("192.168.43.64", 5000, debug=True)

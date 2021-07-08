@@ -4,7 +4,6 @@ import asyncio
 import time
 from autobahn.asyncio.websocket import WebSocketServerFactory
 from autobahn.asyncio.websocket import WebSocketServerProtocol
-from autobahn.websocket.protocol
 
 import requests
 from SIP.messages import *

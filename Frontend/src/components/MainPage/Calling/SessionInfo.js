@@ -36,7 +36,26 @@ function SessionInfo({status,session,incomingSession,dispatch}){
     //timer if in call
     //incoming call from whom
     let callingName="someone";
-    const {timer, timeRunOut, timerRestart} = useTimer(SIP_MAX_INVITE_WAIT_TIME,-1);
+    const {timer, timeRunOut, timerRestart} = useTimer(0,1);//dev
+    // var {timer, timeRunOut, timerRestart} = useTimer(SIP_MAX_INVITE_WAIT_TIME,-1);
+    // const timer_down = timer;
+    // const timeRunOut_down = timeRunOut;
+    // const timerRestart_down = timerRestart;
+    // var {timer} = useTimer(0,1);
+    // const timer_up = timer;
+
+
+    // var res = useTimer(SIP_MAX_INVITE_WAIT_TIME, -1);
+    // console.log(res)
+    // const timerRestart = res["timerRestart"]
+    // const timer = res["timer"]
+    // const timeRunOut = res["timeRunOut"]
+
+    // var res2 = useTimer(0,1);
+    // console.log(res2)
+    // const timerRestart2 = res2["timerRestart"]
+    // const timer2 = res2["timer"]
+    // const timeRunOut2 = res2["timeRunOut"]
 
 
     useEffect(()=>{
@@ -46,7 +65,7 @@ function SessionInfo({status,session,incomingSession,dispatch}){
     //if calling timer has run out on client side, abort the call
     useEffect(()=>{
         if (timeRunOut){
-            dispatch(hangUpPhone())
+            //dispatch(hangUpPhone())//dev
         }
     },[timeRunOut])
 
@@ -69,7 +88,7 @@ function SessionInfo({status,session,incomingSession,dispatch}){
                         <Reel  theme={theme}
                                text={formatTimeMinutes(timer)+"s"}
                         />
-                        <h3>wait time remaining</h3>
+                        <h3>current waiting time</h3>
                     </div>
 
                 </div>
@@ -91,7 +110,7 @@ function SessionInfo({status,session,incomingSession,dispatch}){
 
                     <div className="timer">
                         <Reel  theme={theme}
-                               text={formatTimeMinutes(1000)+"s"}
+                               text={formatTimeMinutes(timer)+"s"}
                         />
                         <h3>current call time</h3>
                     </div>

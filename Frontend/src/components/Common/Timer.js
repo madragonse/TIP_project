@@ -71,6 +71,8 @@ const useTimer = (initialState = 0,countDirection=1) => {
     }
 
     return { timer, isActive, isPaused,timeRunOut, handleStart, handlePause, handleResume, handleReset,timerRestart,setTime }
+    //return { "timer":timer , "isActive":isActive, "isPaused":isPaused,"timeRunOut":timeRunOut, handleStart, handlePause, handleResume, handleReset,timerRestart,setTime }
+
 }
 
 export default useTimer
